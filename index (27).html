@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>99% Guess This Wrong! - Premium Quiz Image Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* App Theme */
+            --app-bg: #0f1115;
+            --sidebar-bg: #161920;
+            --panel-bg: #1f232d;
+            --text-light: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --border: #2e3646;
+
+            /* Canvas Theme Variables (Modified by JS) */
+            --c-primary: #00f3ff;
+            --c-glow: rgba(0, 243, 255, 0.5);
+            --c-text: #ffffff;
+            --c-bg-tint: rgba(0, 0, 0, 0.6);
+            --c-overlay-op: 0.5;
+            --c-blur: 10px;
+            --c-cta-x: 0px;
+            --c-cta-y: 0px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--app-bg);
+            color: var(--text-light);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--sidebar-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        .sidebar {
+            width: 450px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .preview-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--app-bg);
+            background-image: radial-gradient(circle at 50% 50%, #1f232d 0%, #0f1115 100%);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Sidebar Header */
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, rgba(255,255,255,0.05), transparent);
+        }
+        .sidebar-header h1 {
+            font-size: 1.2rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            background: linear-gradient(90deg, #00f3ff, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            overflow-x: auto;
+            border-bottom: 1px solid var(--border);
+            background: var(--sidebar-bg);
+        }
+        .tab-btn {
+            padding: 12px 15px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            color: var(--text-light);
+            border-bottom: 2px solid var(--accent);
+        }
+
+        /* Panels */
+        .panel-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .panel {
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .panel.active {
+            display: flex;
+        }
+
+        /* Form Controls */
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: var(--panel-bg);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+        label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+        }
+        input[type="text"], input[type="url"], textarea, select, input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--sidebar-bg);
+            color: var(--text-light);
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent);
+        }
+        input[type="color"] {
+            width: 100%;
+            height: 40px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: transparent;
+        }
+        input[type="file"] {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        input[type="file"]::file-selector-button {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: none;
+            background: var(--accent);
+            color: white;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-direction: row;
+        }
+        .checkbox-group input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--accent);
+        }
+
+        /* Buttons */
+        button.btn {
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            background: var(--border);
+            color: var(--text-light);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        button.btn:hover { background: #3f4a61; }
+        button.btn.primary {
+            background: linear-gradient(45deg, var(--accent), #0ea5e9);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+        button.btn.primary:hover {
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+            transform: translateY(-1px);
+        }
+        button.btn.download { background: linear-gradient(45deg, #10b981, #059669); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
+
+        /* Template Grid */
+        .template-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .template-card {
+            height: 60px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            transition: transform 0.2s;
+            text-align: center;
+        }
+        .template-card:hover { transform: scale(1.05); }
+        .template-card.active { border-color: white; box-shadow: 0 0 10px rgba(255,255,255,0.5); z-index: 2;}
+
+        /* Preview Canvas Wrappers */
+        #scale-wrapper {
+            transition: transform 0.3s ease-out;
+            transform-origin: center center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        
+        #capture-area {
+            background: #000;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            /* Dimensions set by JS */
+        }
+
+        /* --- EXPORT IMAGE STYLES --- */
+        .export-bg-image {
+            position: absolute;
+            inset: -100px;
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+            filter: blur(var(--c-blur));
+        }
+        .export-bg-overlay {
+            position: absolute;
+            inset: 0;
+            background: var(--c-bg-tint);
+            opacity: var(--c-overlay-op);
+            z-index: 2;
+        }
+        .export-particles {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            background-image: 
+                radial-gradient(circle at 20% 30%, var(--c-glow) 0%, transparent 10%),
+                radial-gradient(circle at 80% 70%, var(--c-glow) 0%, transparent 10%);
+            opacity: 0.3;
+        }
+        .export-content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 80px 60px;
+            font-family: 'Montserrat', sans-serif;
+            color: var(--c-text);
+            text-align: center;
+        }
+        
+        .export-hook {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 15px 30px;
+            border-radius: 50px;
+            display: inline-block;
+            margin: 0 auto 40px auto;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--c-primary);
+            box-shadow: 0 0 20px var(--c-glow);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .export-title {
+            font-size: 65px;
+            font-weight: 900;
+            line-height: 1.2;
+            margin-bottom: 40px;
+            text-shadow: 0 5px 15px rgba(0,0,0,0.5), 0 0 40px var(--c-glow);
+        }
+
+        .export-main-image-wrapper {
+            margin: 0 auto 40px auto;
+            display: none;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+        }
+        .export-main-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .export-options {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            flex: 1;
+        }
+
+        .export-option {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            padding: 30px 40px;
+            border-radius: 20px;
+            font-size: 40px;
+            font-weight: 700;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .export-option::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            transform: translateX(-100%);
+        }
+
+        .export-option.correct-reveal {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.2);
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);
+        }
+
+        .export-reveal-box {
+            display: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-left: 8px solid var(--c-primary);
+            padding: 25px;
+            border-radius: 0 15px 15px 0;
+            margin-top: 30px;
+            text-align: left;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .export-reveal-box.show {
+            display: block;
+        }
+        .export-reveal-box h3 {
+            font-size: 30px;
+            color: var(--c-primary);
+            margin-bottom: 10px;
+        }
+        .export-reveal-box p {
+            font-size: 26px;
+            line-height: 1.4;
+        }
+
+        .export-footer {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* CUSTOM PREMIUM BUTTON CTA - Now Movable via CSS Var */
+        .export-telegram {
+            background: linear-gradient(135deg, #1A92C9, #2FB0E6);
+            padding: 22px 55px;
+            border-radius: 60px;
+            font-size: 32px;
+            font-weight: 900;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            box-shadow: 0 15px 35px rgba(42, 171, 238, 0.5), inset 0 3px 8px rgba(255,255,255,0.4);
+            border: 3px solid rgba(255,255,255,0.2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #ffffff;
+            position: relative;
+            overflow: hidden;
+            transform: translate(var(--c-cta-x), var(--c-cta-y));
+        }
+
+        .export-telegram::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -150%; width: 50%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transform: skewX(-25deg);
+        }
+
+        .export-telegram span.tg-handle {
+            color: #fff;
+            background: rgba(0,0,0,0.2);
+            padding: 5px 15px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            font-size: 28px;
+            margin-left: 5px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .export-logo {
+            position: absolute;
+            z-index: 20;
+            object-fit: contain;
+        }
+        .export-logo-wrapper {
+            position: absolute;
+            z-index: 20;
+        }
+        .export-logo-wrapper.circular img {
+            border-radius: 50%;
+            border: 4px solid var(--c-primary);
+            box-shadow: 0 0 20px var(--c-glow);
+        }
+
+        .export-watermark {
+            font-size: 20px;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 2px;
+            margin-top: 20px;
+        }
+
+        /* History Grid Styles */
+        .history-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .history-item {
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .history-item img {
+            width: 100%;
+            border-radius: 4px;
+            object-fit: cover;
+            border: 1px solid var(--panel-bg);
+        }
+        .history-date {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        @media (max-width: 900px) {
+            .app-container { flex-direction: column; }
+            .sidebar { width: 100%; height: 50vh; border-right: none; border-bottom: 1px solid var(--border); }
+            .preview-area { height: 50vh; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- SIDEBAR CONTROLS -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h1>🔥 99% GUESS WRONG</h1>
+            <p style="font-size: 0.75rem; color: var(--text-muted);">Premium Quiz Image Generator</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('content')">Content</button>
+            <button class="tab-btn" onclick="switchTab('image')">Image</button>
+            <button class="tab-btn" onclick="switchTab('design')">Design</button>
+            <button class="tab-btn" onclick="switchTab('bg')">Background</button>
+            <button class="tab-btn" onclick="switchTab('logo')">Logo</button>
+            <button class="tab-btn" onclick="switchTab('export')">Export</button>
+            <button class="tab-btn" onclick="switchTab('settings')">Settings</button>
+            <button class="tab-btn" onclick="switchTab('history')">History</button>
+        </div>
+
+        <div class="panel-container">
+            <!-- CONTENT TAB -->
+            <div id="tab-content" class="panel active">
+                <div class="control-group">
+                    <label>Canvas Format</label>
+                    <select id="canvas-format" onchange="updateUI()">
+                        <option value="1080x1920">Pinterest / IG Story (1080 × 1920)</option>
+                        <option value="1080x1350">IG Portrait (1080 × 1350)</option>
+                        <option value="1080x1080">Square Post (1080 × 1080)</option>
+                        <option value="custom">Custom Size (Set in Export Tab)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Hook Banner</label>
+                    <input type="text" id="hook-text" value="🔥 99% Guess This Wrong!" oninput="updateUI()">
+                </div>
+
+                <div class="control-group">
+                    <label>Question & Options 
+                        <span style="font-size:0.7rem; font-weight:normal;">Line 1 = Title, Rest = Options</span>
+                    </label>
+                    <textarea id="question-text" oninput="updateUI()">❓ Which animal can change its color?
+🐙 Octopus
+🐶 Dog
+🐴 Horse
+🐼 Panda</textarea>
+                </div>
+
+                <div class="control-group">
+                    <label>Custom CTA Button</label>
+                    <input type="text" id="tg-text" value="Click Below To Vote & Answer" oninput="updateUI()">
+                    <input type="text" id="tg-username" placeholder="@YourChannel" value="@GuessThisWrong99" oninput="updateUI()" style="margin-top:5px;">
+                    
+                    <!-- NEW: Move CTA options -->
+                    <label style="margin-top:10px;">Move CTA X Offset <span id="val-cta-x">0px</span></label>
+                    <input type="range" id="cta-x" min="-500" max="500" value="0" oninput="updateUI()">
+                    
+                    <label style="margin-top:5px;">Move CTA Y Offset <span id="val-cta-y">0px</span></label>
+                    <input type="range" id="cta-y" min="-500" max="500" value="0" oninput="updateUI()">
+                </div>
+
+                <div class="control-group">
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="reveal-mode" onchange="updateUI()"> Answer Reveal Mode
+                    </label>
+                    <div id="reveal-settings" style="display:none; flex-direction:column; gap:10px; margin-top:10px;">
+                        <input type="number" id="correct-index" placeholder="Correct Option Number (1-4)" value="1" min="1" max="10" oninput="updateUI()">
+                        <textarea id="explanation-text" placeholder="Explanation..." oninput="updateUI()">💡 The octopus has specialized cells called chromatophores that allow it to instantly change color and blend into its surroundings.</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- IMAGE TAB -->
+            <div id="tab-image" class="panel">
+                <div class="control-group">
+                    <label>Upload Quiz Image</label>
+                    <input type="file" id="main-img-upload" accept="image/*" onchange="handleImageUpload(event, 'main')">
+                    <button class="btn" onclick="clearMainImage()" style="margin-top:5px; padding:5px;">Clear Image</button>
+                </div>
+                
+                <div class="control-group">
+                    <label>Image Scale <span id="val-img-scale">400px</span></label>
+                    <input type="range" id="img-scale" min="100" max="800" value="400" oninput="updateUI()">
+                </div>
+
+                <div class="control-group">
+                    <label>Border Radius <span id="val-img-radius">20px</span></label>
+                    <input type="range" id="img-radius" min="0" max="400" value="20" oninput="updateUI()">
+                </div>
+                
+                <div class="control-group">
+                    <label>Border Width <span id="val-img-border">5px</span></label>
+                    <input type="range" id="img-border-w" min="0" max="30" value="5" oninput="updateUI()">
+                </div>
+                
+                <div class="control-group">
+                    <label>Border Color</label>
+                    <input type="color" id="img-border-c" value="#00f3ff" oninput="updateUI()">
+                </div>
+
+                <div class="control-group">
+                    <label>Position Offset X <span id="val-img-x">0px</span></label>
+                    <input type="range" id="img-offset-x" min="-400" max="400" value="0" oninput="updateUI()">
+                </div>
+                
+                <div class="control-group">
+                    <label>Position Offset Y <span id="val-img-y">0px</span></label>
+                    <input type="range" id="img-offset-y" min="-400" max="400" value="0" oninput="updateUI()">
+                </div>
+            </div>
+
+            <!-- DESIGN TAB -->
+            <div id="tab-design" class="panel">
+                <div class="control-group">
+                    <label>Quick Templates</label>
+                    <div class="template-grid">
+                        <div class="template-card active" style="background: linear-gradient(45deg, #0f172a, #004e92); color:#00f3ff;" onclick="applyTemplate('neon')">Neon Blue</div>
+                        <div class="template-card" style="background: linear-gradient(45deg, #2c2b2b, #1a1a1a); color:#ffd700;" onclick="applyTemplate('gold')">Gold Luxury</div>
+                        <div class="template-card" style="background: linear-gradient(45deg, #160024, #3b0066); color:#e024ff;" onclick="applyTemplate('galaxy')">Space Galaxy</div>
+                        <div class="template-card" style="background: linear-gradient(45deg, #380000, #ff0044); color:#ffffff;" onclick="applyTemplate('viral')">Viral Red</div>
+                        <div class="template-card" style="background: #0a0a0a; border: 1px solid #333; color:#00ff9d;" onclick="applyTemplate('ai')">Dark AI</div>
+                        <div class="template-card" style="background: linear-gradient(45deg, #100b21, #0b001a); border: 1px solid #ff00ff; color:#00ffff;" onclick="applyTemplate('cyberpunk')">Cyberpunk</div>
+                        <div class="template-card" style="background: linear-gradient(45deg, #001a0b, #0a2e16); color:#00ff55;" onclick="applyTemplate('forest')">Toxic Forest</div>
+                        <div class="template-card" style="background: linear-gradient(45deg, #360f00, #1a0500); color:#ff7b00;" onclick="applyTemplate('sunset')">Sunset Vibe</div>
+                        <div class="template-card" style="background: #111; color:#fff; border: 1px solid #555;" onclick="applyTemplate('monochrome')">Monochrome</div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Primary Color <span id="val-color">#00f3ff</span></label>
+                    <input type="color" id="color-primary" value="#00f3ff" oninput="updateUI()">
+                </div>
+                
+                <div class="control-group">
+                    <label>Text Color</label>
+                    <input type="color" id="color-text" value="#ffffff" oninput="updateUI()">
+                </div>
+
+                <div class="control-group">
+                    <label>Glow Intensity <span id="val-glow">50%</span></label>
+                    <input type="range" id="glow-intensity" min="0" max="100" value="50" oninput="updateUI()">
+                </div>
+            </div>
+
+            <!-- BACKGROUND TAB -->
+            <div id="tab-bg" class="panel">
+                <div class="control-group">
+                    <label>Upload Background Image</label>
+                    <input type="file" id="bg-upload" accept="image/*" onchange="handleImageUpload(event, 'bg')">
+                </div>
+
+                <div class="control-group">
+                    <label>Background Blur <span id="val-blur">10px</span></label>
+                    <input type="range" id="bg-blur" min="0" max="50" value="10" oninput="updateUI()">
+                </div>
+
+                <div class="control-group">
+                    <label>Overlay Color</label>
+                    <input type="color" id="overlay-color" value="#000000" oninput="updateUI()">
+                </div>
+
+                <div class="control-group">
+                    <label>Overlay Opacity <span id="val-opacity">60%</span></label>
+                    <input type="range" id="overlay-opacity" min="0" max="100" value="60" oninput="updateUI()">
+                </div>
+            </div>
+
+            <!-- LOGO TAB -->
+            <div id="tab-logo" class="panel">
+                <div class="control-group">
+                    <label>Upload Logo (PNG)</label>
+                    <input type="file" id="logo-upload" accept="image/png, image/jpeg" onchange="handleImageUpload(event, 'logo')">
+                    <button class="btn" onclick="clearLogo()" style="margin-top:5px; padding:5px;">Clear Logo</button>
+                </div>
+
+                <div class="control-group">
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="logo-circular" onchange="updateUI()"> Circular Frame
+                    </label>
+                </div>
+
+                <div class="control-group">
+                    <label>Logo Size <span id="val-logo-size">150px</span></label>
+                    <input type="range" id="logo-size" min="50" max="400" value="150" oninput="updateUI()">
+                </div>
+
+                <div class="control-group">
+                    <label>Vertical Position <span id="val-logo-y">80%</span></label>
+                    <input type="range" id="logo-y" min="0" max="100" value="80" oninput="updateUI()">
+                </div>
+                
+                <div class="control-group">
+                    <label>Horizontal Position <span id="val-logo-x">50%</span></label>
+                    <input type="range" id="logo-x" min="0" max="100" value="50" oninput="updateUI()">
+                </div>
+            </div>
+
+            <!-- EXPORT TAB -->
+            <div id="tab-export" class="panel">
+                <div class="control-group">
+                    <label>Custom Image Size (px)</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="number" id="custom-w" placeholder="Width" value="1080" oninput="applyCustomSize()">
+                        <span style="color: var(--text-muted); font-weight: bold;">×</span>
+                        <input type="number" id="custom-h" placeholder="Height" value="1920" oninput="applyCustomSize()">
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Export Quality</label>
+                    <select id="export-quality">
+                        <option value="1">Normal (1x)</option>
+                        <option value="2" selected>HD (2x) - Recommended</option>
+                        <option value="3">Ultra HD (3x)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label>Watermark Text</label>
+                    <input type="text" id="watermark-text" value="Generated by Premium Tool" oninput="updateUI()">
+                    <label class="checkbox-group" style="margin-top:10px;">
+                        <input type="checkbox" id="show-watermark" checked onchange="updateUI()"> Show Watermark
+                    </label>
+                </div>
+
+                <div class="control-group" style="margin-top: 20px;">
+                    <button class="btn primary download" onclick="downloadImage('png')">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Download PNG
+                    </button>
+                    <button class="btn primary download" onclick="downloadImage('jpg')" style="background: linear-gradient(45deg, #f59e0b, #d97706);">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Download JPG
+                    </button>
+                </div>
+            </div>
+
+            <!-- SETTINGS TAB (NEW) -->
+            <div id="tab-settings" class="panel">
+                <div class="control-group">
+                    <label>Local Storage Settings</label>
+                    <button class="btn primary" onclick="saveAllSettings()">💾 Save All Settings</button>
+                    <button class="btn" onclick="loadAllSettings()" style="background:#059669;">📂 Load Saved Settings</button>
+                    <button class="btn" onclick="resetAllSettings()" style="background:#dc2626;">🔄 Reset to Default</button>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:10px;">Settings are securely stored in your browser's internal storage.</p>
+                </div>
+            </div>
+
+            <!-- HISTORY TAB (NEW) -->
+            <div id="tab-history" class="panel">
+                <div class="control-group">
+                    <label>Generated Gallery 
+                        <button class="btn" onclick="clearHistory()" style="background:#dc2626; padding:5px; font-size:0.7rem;">🗑️ Clear</button>
+                    </label>
+                    <p style="font-size:0.75rem; color:var(--text-muted);">Downloading an image automatically saves it here so you can edit it later!</p>
+                </div>
+                
+                <div class="history-grid" id="history-gallery">
+                    <!-- History items will populate here -->
+                </div>
+            </div>
+
+            <!-- BONUS TAB (Kept for compatibility) -->
+            <div id="tab-bonus" class="panel">
+                <div class="control-group">
+                    <label>Viral Caption Generator</label>
+                    <button class="btn primary" onclick="generateCaption()">Generate Social Caption</button>
+                    <textarea id="generated-caption" readonly style="margin-top:10px; font-size:0.8rem; height:120px;"></textarea>
+                </div>
+                <div class="control-group">
+                    <label>Random Tools</label>
+                    <button class="btn" onclick="randomizeTheme()" style="margin-bottom:5px;">Shuffle Colors & Design</button>
+                    <button class="btn" onclick="generateRandomQuiz()">Generate Random Quiz</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- PREVIEW AREA -->
+    <div class="preview-area" id="preview-area">
+        <div id="scale-wrapper">
+            <div id="capture-area">
+                <!-- Layers -->
+                <div class="export-bg-image" id="el-bg-image"></div>
+                <div class="export-bg-overlay" id="el-bg-overlay"></div>
+                <div class="export-particles"></div>
+                
+                <!-- Logo Wrapper -->
+                <div class="export-logo-wrapper" id="el-logo-wrapper" style="display:none;">
+                    <img id="el-logo" class="export-logo" src="" alt="logo">
+                </div>
+
+                <!-- Content -->
+                <div class="export-content">
+                    <div class="export-hook" id="el-hook"></div>
+                    <div class="export-title" id="el-title"></div>
+                    
+                    <!-- Main Image Container -->
+                    <div class="export-main-image-wrapper" id="el-main-img-wrapper">
+                        <img class="export-main-img" id="el-main-img" src="" alt="Quiz Image">
+                    </div>
+
+                    <div class="export-options" id="el-options">
+                        <!-- Options generated here -->
+                    </div>
+
+                    <div class="export-reveal-box" id="el-reveal-box">
+                        <h3>✅ Correct Answer</h3>
+                        <p id="el-reveal-text"></p>
+                    </div>
+
+                    <div class="export-footer">
+                        <div class="export-telegram" id="el-telegram">
+                            <svg width="45" height="45" viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.19-.08-.05-.19-.02-.27 0-.12.03-1.96 1.25-5.54 3.67-.52.36-.99.54-1.41.53-.46-.01-1.35-.26-2.01-.48-.81-.27-1.46-.42-1.4-.88.03-.24.38-.48 1.04-.74 4.08-1.78 6.8-2.95 8.15-3.52 3.87-1.63 4.68-1.91 5.2-1.92.11 0 .36.03.5.15.11.1.15.22.17.33.01.12.02.26 0 .36z"/></svg>
+                            <span id="el-tg-text"></span>
+                            <span id="el-tg-username-container" style="display:none;"><span class="tg-handle" id="el-tg-username"></span></span>
+                        </div>
+                        <div class="export-watermark" id="el-watermark"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- STATE & DATA ---
+    let uploadedBg = '';
+    let uploadedLogo = '';
+    let uploadedMainImage = '';
+
+    const templates = {
+        neon: { primary: '#00f3ff', text: '#ffffff', overlay: '#000814' },
+        gold: { primary: '#ffd700', text: '#ffffff', overlay: '#1a1814' },
+        galaxy: { primary: '#e024ff', text: '#ffffff', overlay: '#160024' },
+        viral: { primary: '#ff0044', text: '#ffffff', overlay: '#2a0000' },
+        ai: { primary: '#00ff9d', text: '#ffffff', overlay: '#050a08' },
+        cyberpunk: { primary: '#ff00ff', text: '#00ffff', overlay: '#0b001a' },
+        forest: { primary: '#00ff55', text: '#ffffff', overlay: '#001a0b' },
+        sunset: { primary: '#ff7b00', text: '#ffffff', overlay: '#1a0500' },
+        monochrome: { primary: '#ffffff', text: '#ffffff', overlay: '#000000' }
+    };
+
+    const hooks = [
+        "🔥 99% Guess This Wrong!",
+        "🧠 Only Geniuses Get This Right!",
+        "🤯 Can You Beat The Crowd?",
+        "🚀 Think Before You Answer!",
+        "😱 Most People Fail This Quiz!",
+        "👀 Look Closely Before Answering"
+    ];
+
+    const quizzes = [
+        "❓ Which planet is known as the Red Planet?\n🌍 Earth\n🔴 Mars\n🪐 Jupiter\n⭐ Venus",
+        "❓ What is the hardest natural substance on Earth?\n🪨 Granite\n💎 Diamond\n⛓️ Iron\n🏆 Gold",
+        "❓ Who painted the Mona Lisa?\n🎨 Van Gogh\n🧑‍🎨 Da Vinci\n🖌️ Picasso\n🏛️ Michelangelo"
+    ];
+
+    // --- INITIALIZATION ---
+    window.onload = () => {
+        document.getElementById('el-bg-image').style.backgroundImage = `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%231e293b"/></svg>')`;
+        updateUI();
+        renderHistory();
+        window.addEventListener('resize', scaleCanvas);
+    };
+
+    // --- UI INTERACTIONS ---
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById(`tab-${tabId}`).classList.add('active');
+    }
+
+    function applyCustomSize() {
+        document.getElementById('canvas-format').value = 'custom';
+        updateUI();
+    }
+
+    // --- CORE UPDATE FUNCTION ---
+    function updateUI() {
+        const root = document.documentElement;
+        const primary = document.getElementById('color-primary').value;
+        const text = document.getElementById('color-text').value;
+        const glowInt = document.getElementById('glow-intensity').value;
+        const blur = document.getElementById('bg-blur').value;
+        const overlayColor = document.getElementById('overlay-color').value;
+        const overlayOp = document.getElementById('overlay-opacity').value;
+
+        // CTA Offset Update
+        const ctaX = document.getElementById('cta-x').value;
+        const ctaY = document.getElementById('cta-y').value;
+        document.getElementById('val-cta-x').textContent = ctaX + 'px';
+        document.getElementById('val-cta-y').textContent = ctaY + 'px';
+        root.style.setProperty('--c-cta-x', `${ctaX}px`);
+        root.style.setProperty('--c-cta-y', `${ctaY}px`);
+
+        const hexToRgb = hex => hex.match(/\w\w/g).map(x => parseInt(x, 16)).join(',');
+        
+        root.style.setProperty('--c-primary', primary);
+        root.style.setProperty('--c-text', text);
+        root.style.setProperty('--c-glow', `rgba(${hexToRgb(primary)}, ${glowInt / 100})`);
+        root.style.setProperty('--c-blur', `${blur}px`);
+        root.style.setProperty('--c-bg-tint', overlayColor);
+        root.style.setProperty('--c-overlay-op', overlayOp / 100);
+
+        document.getElementById('val-color').textContent = primary;
+        document.getElementById('val-glow').textContent = glowInt + '%';
+        document.getElementById('val-blur').textContent = blur + 'px';
+        document.getElementById('val-opacity').textContent = overlayOp + '%';
+
+        const format = document.getElementById('canvas-format').value;
+        let w, h;
+        if (format === 'custom') {
+            w = document.getElementById('custom-w').value || 1080;
+            h = document.getElementById('custom-h').value || 1920;
+        } else {
+            [w, h] = format.split('x');
+            document.getElementById('custom-w').value = w;
+            document.getElementById('custom-h').value = h;
+        }
+
+        const captureArea = document.getElementById('capture-area');
+        captureArea.style.width = `${w}px`;
+        captureArea.style.height = `${h}px`;
+        scaleCanvas();
+
+        document.getElementById('el-hook').textContent = document.getElementById('hook-text').value;
+        
+        const qText = document.getElementById('question-text').value.trim().split('\n');
+        document.getElementById('el-title').textContent = qText[0] || '';
+        
+        const optionsContainer = document.getElementById('el-options');
+        optionsContainer.innerHTML = '';
+        
+        const revealMode = document.getElementById('reveal-mode').checked;
+        const correctIdx = parseInt(document.getElementById('correct-index').value) - 1;
+        document.getElementById('reveal-settings').style.display = revealMode ? 'flex' : 'none';
+
+        if (qText.length > 1) {
+            for (let i = 1; i < qText.length; i++) {
+                if (qText[i].trim() === '') continue;
+                const optDiv = document.createElement('div');
+                optDiv.className = 'export-option';
+                optDiv.textContent = qText[i];
+                if (revealMode && i - 1 === correctIdx) {
+                    optDiv.classList.add('correct-reveal');
+                }
+                optionsContainer.appendChild(optDiv);
+            }
+        }
+
+        const revealBox = document.getElementById('el-reveal-box');
+        if (revealMode) {
+            revealBox.classList.add('show');
+            document.getElementById('el-reveal-text').textContent = document.getElementById('explanation-text').value;
+        } else {
+            revealBox.classList.remove('show');
+        }
+
+        const tgText = document.getElementById('tg-text').value;
+        const tgUser = document.getElementById('tg-username').value;
+        const tgEl = document.getElementById('el-telegram');
+        const tgUserContainer = document.getElementById('el-tg-username-container');
+        
+        document.getElementById('el-tg-text').textContent = tgText;
+        if(tgUser) {
+            document.getElementById('el-tg-username').textContent = tgUser;
+            tgUserContainer.style.display = 'inline-block';
+        } else {
+            tgUserContainer.style.display = 'none';
+        }
+        tgEl.style.display = (tgText || tgUser) ? 'flex' : 'none';
+
+        const showWm = document.getElementById('show-watermark').checked;
+        document.getElementById('el-watermark').textContent = showWm ? document.getElementById('watermark-text').value : '';
+
+        const mainImgWrapper = document.getElementById('el-main-img-wrapper');
+        const mainImg = document.getElementById('el-main-img');
+        if (uploadedMainImage) {
+            mainImgWrapper.style.display = 'block';
+            mainImg.src = uploadedMainImage;
+            
+            const scale = document.getElementById('img-scale').value;
+            const radius = document.getElementById('img-radius').value;
+            const borderW = document.getElementById('img-border-w').value;
+            const borderC = document.getElementById('img-border-c').value;
+            const offsetX = document.getElementById('img-offset-x').value;
+            const offsetY = document.getElementById('img-offset-y').value;
+
+            document.getElementById('val-img-scale').textContent = scale + 'px';
+            document.getElementById('val-img-radius').textContent = radius + 'px';
+            document.getElementById('val-img-border').textContent = borderW + 'px';
+            document.getElementById('val-img-x').textContent = offsetX + 'px';
+            document.getElementById('val-img-y').textContent = offsetY + 'px';
+
+            mainImgWrapper.style.width = `${scale}px`;
+            mainImgWrapper.style.height = `${scale}px`; 
+            mainImgWrapper.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+            mainImgWrapper.style.borderRadius = `${radius}px`;
+            
+            if (borderW > 0) {
+                mainImgWrapper.style.border = `${borderW}px solid ${borderC}`;
+                mainImgWrapper.style.boxShadow = `0 10px 40px rgba(0,0,0,0.6), 0 0 30px ${borderC}`;
+            } else {
+                mainImgWrapper.style.border = `none`;
+                mainImgWrapper.style.boxShadow = `0 10px 40px rgba(0,0,0,0.6)`;
+            }
+            mainImg.style.borderRadius = `${radius - borderW > 0 ? radius - borderW : 0}px`;
+        } else {
+            mainImgWrapper.style.display = 'none';
+        }
+
+        const logoWrapper = document.getElementById('el-logo-wrapper');
+        const logoImg = document.getElementById('el-logo');
+        if (uploadedLogo) {
+            logoWrapper.style.display = 'block';
+            logoImg.src = uploadedLogo;
+            
+            const size = document.getElementById('logo-size').value;
+            const x = document.getElementById('logo-x').value;
+            const y = document.getElementById('logo-y').value;
+            const isCirc = document.getElementById('logo-circular').checked;
+
+            document.getElementById('val-logo-size').textContent = size + 'px';
+            document.getElementById('val-logo-x').textContent = x + '%';
+            document.getElementById('val-logo-y').textContent = y + '%';
+
+            logoImg.style.width = `${size}px`;
+            logoImg.style.height = isCirc ? `${size}px` : 'auto';
+            logoImg.style.objectFit = isCirc ? 'cover' : 'contain';
+            
+            if(isCirc) logoWrapper.classList.add('circular');
+            else logoWrapper.classList.remove('circular');
+
+            logoWrapper.style.left = `calc(${x}% - ${size/2}px)`;
+            logoWrapper.style.top = `calc(${y}% - ${isCirc ? size/2 : logoImg.clientHeight/2}px)`;
+        } else {
+            logoWrapper.style.display = 'none';
+        }
+    }
+
+    function scaleCanvas() {
+        const wrapper = document.getElementById('scale-wrapper');
+        const capture = document.getElementById('capture-area');
+        const container = document.getElementById('preview-area');
+        
+        const cw = capture.offsetWidth;
+        const ch = capture.offsetHeight;
+        const pw = container.offsetWidth - 40; 
+        const ph = container.offsetHeight - 40;
+        
+        const scale = Math.min(pw / cw, ph / ch);
+        wrapper.style.transform = `scale(${scale})`;
+    }
+
+    // --- UPLOADS ---
+    function handleImageUpload(e, type) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            if (type === 'bg') {
+                uploadedBg = event.target.result;
+                document.getElementById('el-bg-image').style.backgroundImage = `url(${uploadedBg})`;
+            } else if (type === 'logo') {
+                uploadedLogo = event.target.result;
+            } else if (type === 'main') {
+                uploadedMainImage = event.target.result;
+            }
+            updateUI();
+        };
+        reader.readAsDataURL(file);
+    }
+    function clearLogo() { uploadedLogo = ''; document.getElementById('logo-upload').value = ''; updateUI(); }
+    function clearMainImage() { uploadedMainImage = ''; document.getElementById('main-img-upload').value = ''; updateUI(); }
+
+    // --- TEMPLATES & AI ---
+    function applyTemplate(name) {
+        document.querySelectorAll('.template-card').forEach(c => c.classList.remove('active'));
+        event.target.classList.add('active');
+        const t = templates[name];
+        document.getElementById('color-primary').value = t.primary;
+        document.getElementById('color-text').value = t.text;
+        document.getElementById('overlay-color').value = t.overlay;
+        document.getElementById('img-border-c').value = t.primary;
+        updateUI();
+    }
+    function generateRandomHook() { document.getElementById('hook-text').value = hooks[Math.floor(Math.random() * hooks.length)]; updateUI(); }
+    function generateRandomQuiz() { document.getElementById('question-text').value = quizzes[Math.floor(Math.random() * quizzes.length)]; updateUI(); }
+    function randomizeTheme() {
+        const keys = Object.keys(templates);
+        generateRandomHook();
+        document.getElementById('bg-blur').value = Math.floor(Math.random() * 20);
+        document.getElementById('glow-intensity').value = Math.floor(Math.random() * 60) + 40;
+        const targetIndex = keys.indexOf(keys[Math.floor(Math.random() * keys.length)]);
+        document.querySelectorAll('.template-card')[targetIndex]?.click();
+    }
+    function generateCaption() {
+        const topic = document.getElementById('el-title').textContent.replace('❓', '').trim();
+        document.getElementById('generated-caption').value = `🧠 Think you're smart? 99% of people get this wrong! \n\n${topic}\n\n👇 Drop your answer in the comments before looking at the reveal!\n\nTag a friend to challenge them! 🏆\n\n#quiz #trivia #brainteaser #challenge`;
+    }
+
+    // --- STATE MANAGEMENT (Save/Load/History) ---
+    function getAppState() {
+        return {
+            format: document.getElementById('canvas-format').value,
+            customW: document.getElementById('custom-w').value,
+            customH: document.getElementById('custom-h').value,
+            hook: document.getElementById('hook-text').value,
+            question: document.getElementById('question-text').value,
+            tgText: document.getElementById('tg-text').value,
+            tgUser: document.getElementById('tg-username').value,
+            ctaX: document.getElementById('cta-x').value,
+            ctaY: document.getElementById('cta-y').value,
+            revealMode: document.getElementById('reveal-mode').checked,
+            correctIdx: document.getElementById('correct-index').value,
+            explanation: document.getElementById('explanation-text').value,
+            imgScale: document.getElementById('img-scale').value,
+            imgRadius: document.getElementById('img-radius').value,
+            imgBorderW: document.getElementById('img-border-w').value,
+            imgBorderC: document.getElementById('img-border-c').value,
+            imgOffsetX: document.getElementById('img-offset-x').value,
+            imgOffsetY: document.getElementById('img-offset-y').value,
+            primary: document.getElementById('color-primary').value,
+            text: document.getElementById('color-text').value,
+            glow: document.getElementById('glow-intensity').value,
+            blur: document.getElementById('bg-blur').value,
+            overlayColor: document.getElementById('overlay-color').value,
+            overlayOp: document.getElementById('overlay-opacity').value,
+            logoCircular: document.getElementById('logo-circular').checked,
+            logoSize: document.getElementById('logo-size').value,
+            logoX: document.getElementById('logo-x').value,
+            logoY: document.getElementById('logo-y').value,
+            exportQuality: document.getElementById('export-quality').value,
+            watermarkText: document.getElementById('watermark-text').value,
+            showWatermark: document.getElementById('show-watermark').checked,
+            uploadedBg: uploadedBg,
+            uploadedLogo: uploadedLogo,
+            uploadedMainImage: uploadedMainImage
+        };
+    }
+
+    function setAppState(state) {
+        if(!state) return;
+        document.getElementById('canvas-format').value = state.format || '1080x1920';
+        document.getElementById('custom-w').value = state.customW || 1080;
+        document.getElementById('custom-h').value = state.customH || 1920;
+        document.getElementById('hook-text').value = state.hook || '';
+        document.getElementById('question-text').value = state.question || '';
+        document.getElementById('tg-text').value = state.tgText || '';
+        document.getElementById('tg-username').value = state.tgUser || '';
+        document.getElementById('cta-x').value = state.ctaX || 0;
+        document.getElementById('cta-y').value = state.ctaY || 0;
+        document.getElementById('reveal-mode').checked = state.revealMode || false;
+        document.getElementById('correct-index').value = state.correctIdx || 1;
+        document.getElementById('explanation-text').value = state.explanation || '';
+        document.getElementById('img-scale').value = state.imgScale || 400;
+        document.getElementById('img-radius').value = state.imgRadius || 20;
+        document.getElementById('img-border-w').value = state.imgBorderW || 5;
+        document.getElementById('img-border-c').value = state.imgBorderC || '#00f3ff';
+        document.getElementById('img-offset-x').value = state.imgOffsetX || 0;
+        document.getElementById('img-offset-y').value = state.imgOffsetY || 0;
+        document.getElementById('color-primary').value = state.primary || '#00f3ff';
+        document.getElementById('color-text').value = state.text || '#ffffff';
+        document.getElementById('glow-intensity').value = state.glow || 50;
+        document.getElementById('bg-blur').value = state.blur || 10;
+        document.getElementById('overlay-color').value = state.overlayColor || '#000000';
+        document.getElementById('overlay-opacity').value = state.overlayOp || 60;
+        document.getElementById('logo-circular').checked = state.logoCircular || false;
+        document.getElementById('logo-size').value = state.logoSize || 150;
+        document.getElementById('logo-x').value = state.logoX || 50;
+        document.getElementById('logo-y').value = state.logoY || 80;
+        document.getElementById('export-quality').value = state.exportQuality || 2;
+        document.getElementById('watermark-text').value = state.watermarkText || 'Generated by Premium Tool';
+        document.getElementById('show-watermark').checked = state.showWatermark !== undefined ? state.showWatermark : true;
+        
+        uploadedBg = state.uploadedBg || '';
+        uploadedLogo = state.uploadedLogo || '';
+        uploadedMainImage = state.uploadedMainImage || '';
+        
+        if (uploadedBg) document.getElementById('el-bg-image').style.backgroundImage = `url(${uploadedBg})`;
+        else document.getElementById('el-bg-image').style.backgroundImage = `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><rect width="100" height="100" fill="%231e293b"/></svg>')`;
+
+        updateUI();
+    }
+
+    function saveAllSettings() {
+        try {
+            localStorage.setItem('quiz_app_settings', JSON.stringify(getAppState()));
+            alert('Settings Saved to Internal Storage Successfully!');
+        } catch(e) {
+            alert('Storage full! Clear history or use smaller images before saving.');
+        }
+    }
+
+    function loadAllSettings() {
+        const saved = localStorage.getItem('quiz_app_settings');
+        if(saved) {
+            setAppState(JSON.parse(saved));
+            alert('Settings Loaded!');
+        } else {
+            alert('No saved settings found in internal storage.');
+        }
+    }
+
+    function resetAllSettings() {
+        if(confirm('Reset all settings to default?')) {
+            localStorage.removeItem('quiz_app_settings');
+            location.reload();
+        }
+    }
+
+    // --- HISTORY SYSTEM ---
+    async function saveToHistory(captureArea) {
+        try {
+            // Create a small lightweight thumbnail to save storage space
+            const canvas = await html2canvas(captureArea, { scale: 0.2, useCORS: true, logging: false });
+            const thumb = canvas.toDataURL('image/jpeg', 0.5);
+            
+            let history = JSON.parse(localStorage.getItem('quiz_app_history') || '[]');
+            const newItem = {
+                id: Date.now(),
+                thumb: thumb,
+                state: getAppState(),
+                date: new Date().toLocaleString()
+            };
+            history.unshift(newItem); // Add newest to top
+            if(history.length > 12) history.pop(); // Max 12 history items to prevent quota crash
+            
+            localStorage.setItem('quiz_app_history', JSON.stringify(history));
+            renderHistory();
+        } catch(e) {
+            console.error('History save error', e);
+        }
+    }
+
+    function renderHistory() {
+        const gallery = document.getElementById('history-gallery');
+        let history = JSON.parse(localStorage.getItem('quiz_app_history') || '[]');
+        if(history.length === 0) {
+            gallery.innerHTML = '<p style="color:var(--text-muted); font-size:0.8rem; grid-column:span 2; text-align:center;">No history yet. Generate an image first!</p>';
+            return;
+        }
+        gallery.innerHTML = history.map((item, index) => `
+            <div class="history-item">
+                <img src="${item.thumb}" alt="History item">
+                <div class="history-date">${item.date}</div>
+                <button class="btn primary" onclick="loadHistoryItem(${index})" style="padding:6px; font-size:0.75rem; margin-top:5px;">✏️ Edit Image</button>
+            </div>
+        `).join('');
+    }
+
+    function loadHistoryItem(index) {
+        let history = JSON.parse(localStorage.getItem('quiz_app_history') || '[]');
+        if(history[index]) {
+            setAppState(history[index].state);
+            // Simulate clicking Content tab to jump to edit mode
+            document.querySelector('.tab-btn').click();
+        }
+    }
+
+    function clearHistory() {
+        if(confirm('Clear all generated history?')) {
+            localStorage.removeItem('quiz_app_history');
+            renderHistory();
+        }
+    }
+
+    // --- EXPORT FUNCTIONALITY ---
+    async function downloadImage(format) {
+        const captureArea = document.getElementById('capture-area');
+        const scaleWrapper = document.getElementById('scale-wrapper');
+        const quality = parseInt(document.getElementById('export-quality').value);
+        
+        const oldTransform = scaleWrapper.style.transform;
+        scaleWrapper.style.transform = 'scale(1)';
+        
+        const btns = document.querySelectorAll('.download');
+        const currentBtn = event.currentTarget;
+        const oldText = currentBtn.innerHTML;
+        currentBtn.innerHTML = '⏳ Generating...';
+        btns.forEach(b => b.style.opacity = '0.5');
+
+        try {
+            const canvas = await html2canvas(captureArea, {
+                scale: quality,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: null,
+                logging: false
+            });
+
+            const link = document.createElement('a');
+            link.download = `viral-quiz-${Date.now()}.${format}`;
+            link.href = canvas.toDataURL(`image/${format === 'jpg' ? 'jpeg' : 'png'}`, 0.95);
+            link.click();
+            
+            // Auto-save to History Gallery
+            await saveToHistory(captureArea);
+            
+        } catch (error) {
+            alert('Error generating image. Try reducing image size.');
+            console.error(error);
+        } finally {
+            scaleWrapper.style.transform = oldTransform;
+            currentBtn.innerHTML = oldText;
+            btns.forEach(b => b.style.opacity = '1');
+        }
+    }
+
+</script>
+</body>
+</html>
