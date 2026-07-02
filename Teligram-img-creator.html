@@ -1,3 +1,4 @@
+ 
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>99% Guess This Wrong! - Premium Quiz Image Generator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Poppins:wght@400;600;800&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
             /* App Theme */
@@ -27,6 +28,7 @@
             --c-blur: 10px;
             --c-cta-x: 0px;
             --c-cta-y: 0px;
+            --font-main: 'Montserrat', sans-serif;
         }
 
         * {
@@ -99,7 +101,10 @@
             overflow-x: auto;
             border-bottom: 1px solid var(--border);
             background: var(--sidebar-bg);
+            scrollbar-width: none; /* Firefox */
         }
+        .tabs::-webkit-scrollbar { display: none; } /* Chrome */
+        
         .tab-btn {
             padding: 12px 15px;
             background: transparent;
@@ -195,6 +200,8 @@
             align-items: center;
             gap: 10px;
             flex-direction: row;
+            font-size: 0.85rem;
+            color: var(--text-light);
         }
         .checkbox-group input {
             width: 18px;
@@ -282,10 +289,22 @@
             opacity: var(--c-overlay-op);
             z-index: 2;
         }
-        .export-particles {
+        /* New Pattern Overlay feature */
+        .export-pattern {
             position: absolute;
             inset: 0;
             z-index: 3;
+            opacity: 0.15;
+            background-size: 20px 20px;
+        }
+        .pattern-dots { background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 15px 15px; }
+        .pattern-grid { background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px); background-size: 30px 30px; }
+        .pattern-lines { background-image: repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%); background-size: 15px 15px; opacity: 0.05;}
+
+        .export-particles {
+            position: absolute;
+            inset: 0;
+            z-index: 4;
             background-image: 
                 radial-gradient(circle at 20% 30%, var(--c-glow) 0%, transparent 10%),
                 radial-gradient(circle at 80% 70%, var(--c-glow) 0%, transparent 10%);
@@ -298,7 +317,7 @@
             flex-direction: column;
             height: 100%;
             padding: 80px 60px;
-            font-family: 'Montserrat', sans-serif;
+            font-family: var(--font-main);
             color: var(--c-text);
             text-align: center;
         }
@@ -415,7 +434,6 @@
             gap: 20px;
         }
 
-        /* CUSTOM PREMIUM BUTTON CTA - Now Movable via CSS Var */
         .export-telegram {
             background: linear-gradient(135deg, #1A92C9, #2FB0E6);
             padding: 22px 55px;
@@ -449,7 +467,7 @@
             padding: 5px 15px;
             border-radius: 30px;
             font-weight: 700;
-            font-family: 'Poppins', sans-serif;
+            font-family: var(--font-main);
             font-size: 28px;
             margin-left: 5px;
             border: 1px solid rgba(255,255,255,0.1);
@@ -477,31 +495,129 @@
             margin-top: 20px;
         }
 
-        /* History Grid Styles */
+        /* --- HISTORY GALLERY SYSTEM --- */
         .history-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
             gap: 15px;
+            margin-top: 10px;
         }
         .history-item {
             background: var(--sidebar-bg);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 8px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            border-radius: 12px;
+            position: relative;
+            transition: transform 0.2s;
+            overflow: hidden;
         }
-        .history-item img {
+        .history-item:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+        .history-thumb-container {
             width: 100%;
-            border-radius: 4px;
-            object-fit: cover;
-            border: 1px solid var(--panel-bg);
+            height: 250px;
+            background: #000;
+            cursor: pointer;
+            position: relative;
         }
-        .history-date {
-            font-size: 0.7rem;
+        .history-thumb-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        .history-info {
+            padding: 10px;
+            background: var(--panel-bg);
+            font-size: 0.75rem;
             color: var(--text-muted);
             text-align: center;
+            border-top: 1px solid var(--border);
+        }
+        
+        /* Pin Badge */
+        .pin-badge {
+            position: absolute;
+            top: 8px; left: 8px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 25px; height: 25px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.8rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            z-index: 5;
+        }
+
+        /* 3 Dot Menu */
+        .kebab-btn {
+            position: absolute;
+            top: 8px; right: 8px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border-radius: 50%;
+            width: 30px; height: 30px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 5;
+            transition: background 0.2s;
+        }
+        .kebab-btn:hover { background: var(--accent); }
+        
+        .kebab-dropdown {
+            position: absolute;
+            top: 40px; right: 8px;
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            z-index: 10;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            width: 120px;
+        }
+        .kebab-dropdown.show { display: flex; }
+        .kebab-dropdown button {
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            padding: 10px 15px;
+            text-align: left;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.85rem;
+            transition: background 0.2s;
+        }
+        .kebab-dropdown button:hover { background: var(--border); }
+        .kebab-dropdown button.danger:hover { background: #ef4444; color: white; }
+
+        /* Lightbox Viewer */
+        #lightbox {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+        #lightbox img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+        }
+        #lightbox-close {
+            position: absolute;
+            top: 20px; right: 30px;
+            color: white;
+            font-size: 40px;
+            cursor: pointer;
         }
 
         @media (max-width: 900px) {
@@ -511,7 +627,7 @@
         }
     </style>
 </head>
-<body>
+<body onclick="closeAllDropdowns(event)">
 
 <div class="app-container">
     <!-- SIDEBAR CONTROLS -->
@@ -566,7 +682,6 @@
                     <input type="text" id="tg-text" value="Click Below To Vote & Answer" oninput="updateUI()">
                     <input type="text" id="tg-username" placeholder="@YourChannel" value="@GuessThisWrong99" oninput="updateUI()" style="margin-top:5px;">
                     
-                    <!-- NEW: Move CTA options -->
                     <label style="margin-top:10px;">Move CTA X Offset <span id="val-cta-x">0px</span></label>
                     <input type="range" id="cta-x" min="-500" max="500" value="0" oninput="updateUI()">
                     
@@ -665,6 +780,16 @@
                 </div>
 
                 <div class="control-group">
+                    <label>Background Pattern</label>
+                    <select id="bg-pattern" onchange="updateUI()">
+                        <option value="none">None</option>
+                        <option value="pattern-dots">Dotted Overlay</option>
+                        <option value="pattern-grid">Grid Overlay</option>
+                        <option value="pattern-lines">Diagonal Lines</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
                     <label>Background Blur <span id="val-blur">10px</span></label>
                     <input type="range" id="bg-blur" min="0" max="50" value="10" oninput="updateUI()">
                 </div>
@@ -750,24 +875,41 @@
                 </div>
             </div>
 
-            <!-- SETTINGS TAB (NEW) -->
+            <!-- SETTINGS TAB -->
             <div id="tab-settings" class="panel">
                 <div class="control-group">
-                    <label>Local Storage Settings</label>
-                    <button class="btn primary" onclick="saveAllSettings()">💾 Save All Settings</button>
+                    <label>Global Font Family</label>
+                    <select id="font-family" onchange="updateUI()">
+                        <option value="'Montserrat', sans-serif">Montserrat (Modern & Bold)</option>
+                        <option value="'Poppins', sans-serif">Poppins (Clean & Round)</option>
+                        <option value="'Oswald', sans-serif">Oswald (Tall & Condensed)</option>
+                        <option value="Arial, sans-serif">Arial (Standard)</option>
+                        <option value="Impact, sans-serif">Impact (Meme Style)</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label class="checkbox-group">
+                        <input type="checkbox" id="auto-save-toggle" checked> Auto-save settings after Download
+                    </label>
+                </div>
+
+                <div class="control-group" style="margin-top:10px;">
+                    <label>Manual Storage Controls</label>
+                    <button class="btn primary" onclick="saveAllSettings()">💾 Save Settings Now</button>
                     <button class="btn" onclick="loadAllSettings()" style="background:#059669;">📂 Load Saved Settings</button>
-                    <button class="btn" onclick="resetAllSettings()" style="background:#dc2626;">🔄 Reset to Default</button>
-                    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:10px;">Settings are securely stored in your browser's internal storage.</p>
+                    <button class="btn" onclick="resetAllSettings()" style="background:#dc2626;">🔄 Factory Reset Settings</button>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:10px;">Settings are securely stored locally in your browser.</p>
                 </div>
             </div>
 
-            <!-- HISTORY TAB (NEW) -->
+            <!-- HISTORY TAB -->
             <div id="tab-history" class="panel">
                 <div class="control-group">
-                    <label>Generated Gallery 
-                        <button class="btn" onclick="clearHistory()" style="background:#dc2626; padding:5px; font-size:0.7rem;">🗑️ Clear</button>
+                    <label style="align-items:center;">Generated Gallery 
+                        <button class="btn" onclick="clearHistory()" style="background:#dc2626; padding:5px 10px; font-size:0.75rem;">🗑️ Clear Unpinned</button>
                     </label>
-                    <p style="font-size:0.75rem; color:var(--text-muted);">Downloading an image automatically saves it here so you can edit it later!</p>
+                    <p style="font-size:0.75rem; color:var(--text-muted);">Downloading automatically saves your image here. Click the 3 dots for options!</p>
                 </div>
                 
                 <div class="history-grid" id="history-gallery">
@@ -775,7 +917,7 @@
                 </div>
             </div>
 
-            <!-- BONUS TAB (Kept for compatibility) -->
+            <!-- BONUS TAB (Hidden intentionally to preserve layout but can be activated if needed) -->
             <div id="tab-bonus" class="panel">
                 <div class="control-group">
                     <label>Viral Caption Generator</label>
@@ -799,6 +941,7 @@
                 <!-- Layers -->
                 <div class="export-bg-image" id="el-bg-image"></div>
                 <div class="export-bg-overlay" id="el-bg-overlay"></div>
+                <div class="export-pattern" id="el-bg-pattern"></div>
                 <div class="export-particles"></div>
                 
                 <!-- Logo Wrapper -->
@@ -837,6 +980,12 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- LIGHTBOX OVERLAY -->
+<div id="lightbox" onclick="closeLightbox(event)">
+    <span id="lightbox-close">&times;</span>
+    <img id="lightbox-img" src="" alt="View">
 </div>
 
 <script>
@@ -902,14 +1051,24 @@
         const blur = document.getElementById('bg-blur').value;
         const overlayColor = document.getElementById('overlay-color').value;
         const overlayOp = document.getElementById('overlay-opacity').value;
+        const fontFam = document.getElementById('font-family').value;
+        const bgPattern = document.getElementById('bg-pattern').value;
 
-        // CTA Offset Update
+        // CTA Offset
         const ctaX = document.getElementById('cta-x').value;
         const ctaY = document.getElementById('cta-y').value;
         document.getElementById('val-cta-x').textContent = ctaX + 'px';
         document.getElementById('val-cta-y').textContent = ctaY + 'px';
         root.style.setProperty('--c-cta-x', `${ctaX}px`);
         root.style.setProperty('--c-cta-y', `${ctaY}px`);
+
+        // Font
+        root.style.setProperty('--font-main', fontFam);
+
+        // Pattern
+        const patternEl = document.getElementById('el-bg-pattern');
+        patternEl.className = 'export-pattern';
+        if(bgPattern !== 'none') patternEl.classList.add(bgPattern);
 
         const hexToRgb = hex => hex.match(/\w\w/g).map(x => parseInt(x, 16)).join(',');
         
@@ -1117,12 +1276,14 @@
         document.getElementById('generated-caption').value = `🧠 Think you're smart? 99% of people get this wrong! \n\n${topic}\n\n👇 Drop your answer in the comments before looking at the reveal!\n\nTag a friend to challenge them! 🏆\n\n#quiz #trivia #brainteaser #challenge`;
     }
 
-    // --- STATE MANAGEMENT (Save/Load/History) ---
+    // --- STATE MANAGEMENT ---
     function getAppState() {
         return {
             format: document.getElementById('canvas-format').value,
             customW: document.getElementById('custom-w').value,
             customH: document.getElementById('custom-h').value,
+            fontFam: document.getElementById('font-family').value,
+            bgPattern: document.getElementById('bg-pattern').value,
             hook: document.getElementById('hook-text').value,
             question: document.getElementById('question-text').value,
             tgText: document.getElementById('tg-text').value,
@@ -1151,6 +1312,7 @@
             exportQuality: document.getElementById('export-quality').value,
             watermarkText: document.getElementById('watermark-text').value,
             showWatermark: document.getElementById('show-watermark').checked,
+            autoSaveToggle: document.getElementById('auto-save-toggle').checked,
             uploadedBg: uploadedBg,
             uploadedLogo: uploadedLogo,
             uploadedMainImage: uploadedMainImage
@@ -1162,6 +1324,8 @@
         document.getElementById('canvas-format').value = state.format || '1080x1920';
         document.getElementById('custom-w').value = state.customW || 1080;
         document.getElementById('custom-h').value = state.customH || 1920;
+        document.getElementById('font-family').value = state.fontFam || "'Montserrat', sans-serif";
+        document.getElementById('bg-pattern').value = state.bgPattern || "none";
         document.getElementById('hook-text').value = state.hook || '';
         document.getElementById('question-text').value = state.question || '';
         document.getElementById('tg-text').value = state.tgText || '';
@@ -1190,6 +1354,7 @@
         document.getElementById('export-quality').value = state.exportQuality || 2;
         document.getElementById('watermark-text').value = state.watermarkText || 'Generated by Premium Tool';
         document.getElementById('show-watermark').checked = state.showWatermark !== undefined ? state.showWatermark : true;
+        document.getElementById('auto-save-toggle').checked = state.autoSaveToggle !== undefined ? state.autoSaveToggle : true;
         
         uploadedBg = state.uploadedBg || '';
         uploadedLogo = state.uploadedLogo || '';
@@ -1201,12 +1366,12 @@
         updateUI();
     }
 
-    function saveAllSettings() {
+    function saveAllSettings(silent = false) {
         try {
             localStorage.setItem('quiz_app_settings', JSON.stringify(getAppState()));
-            alert('Settings Saved to Internal Storage Successfully!');
+            if(!silent) alert('Settings Saved to Internal Storage Successfully!');
         } catch(e) {
-            alert('Storage full! Clear history or use smaller images before saving.');
+            if(!silent) alert('Storage full! Clear history or use smaller images before saving.');
         }
     }
 
@@ -1227,25 +1392,44 @@
         }
     }
 
-    // --- HISTORY SYSTEM ---
+    // --- HISTORY SYSTEM WITH PIN & DELETE ---
+    function getHistoryData() {
+        return JSON.parse(localStorage.getItem('quiz_app_history') || '[]');
+    }
+    
+    function setHistoryData(data) {
+        localStorage.setItem('quiz_app_history', JSON.stringify(data));
+        renderHistory();
+    }
+
     async function saveToHistory(captureArea) {
         try {
-            // Create a small lightweight thumbnail to save storage space
-            const canvas = await html2canvas(captureArea, { scale: 0.2, useCORS: true, logging: false });
-            const thumb = canvas.toDataURL('image/jpeg', 0.5);
+            const canvas = await html2canvas(captureArea, { scale: 0.25, useCORS: true, logging: false });
+            const thumb = canvas.toDataURL('image/jpeg', 0.6);
             
-            let history = JSON.parse(localStorage.getItem('quiz_app_history') || '[]');
+            let history = getHistoryData();
             const newItem = {
                 id: Date.now(),
                 thumb: thumb,
                 state: getAppState(),
-                date: new Date().toLocaleString()
+                date: new Date().toLocaleString(),
+                pinned: false
             };
-            history.unshift(newItem); // Add newest to top
-            if(history.length > 12) history.pop(); // Max 12 history items to prevent quota crash
             
-            localStorage.setItem('quiz_app_history', JSON.stringify(history));
-            renderHistory();
+            history.push(newItem);
+            
+            // Limit to 15 items, but don't delete pinned items
+            if(history.length > 15) {
+                const unpinnedIndex = history.findIndex(item => !item.pinned);
+                if(unpinnedIndex !== -1) {
+                    history.splice(unpinnedIndex, 1);
+                } else {
+                    // if all are pinned, force pop oldest
+                    history.shift();
+                }
+            }
+            
+            setHistoryData(history);
         } catch(e) {
             console.error('History save error', e);
         }
@@ -1253,33 +1437,92 @@
 
     function renderHistory() {
         const gallery = document.getElementById('history-gallery');
-        let history = JSON.parse(localStorage.getItem('quiz_app_history') || '[]');
+        let history = getHistoryData();
+        
+        // Sort: pinned first, then newest first
+        history.sort((a, b) => {
+            if (a.pinned === b.pinned) return b.id - a.id;
+            return a.pinned ? -1 : 1;
+        });
+
         if(history.length === 0) {
             gallery.innerHTML = '<p style="color:var(--text-muted); font-size:0.8rem; grid-column:span 2; text-align:center;">No history yet. Generate an image first!</p>';
             return;
         }
-        gallery.innerHTML = history.map((item, index) => `
+        
+        gallery.innerHTML = history.map((item) => `
             <div class="history-item">
-                <img src="${item.thumb}" alt="History item">
-                <div class="history-date">${item.date}</div>
-                <button class="btn primary" onclick="loadHistoryItem(${index})" style="padding:6px; font-size:0.75rem; margin-top:5px;">✏️ Edit Image</button>
+                <div class="history-thumb-container" onclick="openLightbox('${item.thumb}')">
+                    <img src="${item.thumb}" alt="History Thumbnail">
+                </div>
+                ${item.pinned ? `<div class="pin-badge">📌</div>` : ''}
+                <div class="kebab-btn" onclick="toggleMenu(${item.id}, event)">⋮</div>
+                
+                <div class="kebab-dropdown" id="menu-${item.id}">
+                    <button onclick="editHistoryItem(${item.id})">✏️ Edit Design</button>
+                    <button onclick="pinHistoryItem(${item.id})">${item.pinned ? '📍 Unpin' : '📌 Pin to Top'}</button>
+                    <button class="danger" onclick="deleteHistoryItem(${item.id})">🗑️ Delete</button>
+                </div>
+                
+                <div class="history-info">${item.date}</div>
             </div>
         `).join('');
     }
 
-    function loadHistoryItem(index) {
-        let history = JSON.parse(localStorage.getItem('quiz_app_history') || '[]');
-        if(history[index]) {
-            setAppState(history[index].state);
-            // Simulate clicking Content tab to jump to edit mode
-            document.querySelector('.tab-btn').click();
+    // History Actions
+    function toggleMenu(id, e) {
+        e.stopPropagation();
+        closeAllDropdowns();
+        document.getElementById(`menu-${id}`).classList.add('show');
+    }
+
+    function closeAllDropdowns() {
+        document.querySelectorAll('.kebab-dropdown').forEach(m => m.classList.remove('show'));
+    }
+
+    function editHistoryItem(id) {
+        let history = getHistoryData();
+        let item = history.find(i => i.id === id);
+        if(item) {
+            setAppState(item.state);
+            document.querySelector('.tab-btn').click(); // jump to content tab
+        }
+    }
+
+    function pinHistoryItem(id) {
+        let history = getHistoryData();
+        let item = history.find(i => i.id === id);
+        if(item) {
+            item.pinned = !item.pinned;
+            setHistoryData(history);
+        }
+    }
+
+    function deleteHistoryItem(id) {
+        if(confirm('Delete this design permanently?')) {
+            let history = getHistoryData();
+            history = history.filter(i => i.id !== id);
+            setHistoryData(history);
         }
     }
 
     function clearHistory() {
-        if(confirm('Clear all generated history?')) {
-            localStorage.removeItem('quiz_app_history');
-            renderHistory();
+        if(confirm('Clear all unpinned history?')) {
+            let history = getHistoryData().filter(i => i.pinned);
+            setHistoryData(history);
+        }
+    }
+
+    // --- LIGHTBOX SYSTEM ---
+    function openLightbox(src) {
+        const lb = document.getElementById('lightbox');
+        document.getElementById('lightbox-img').src = src;
+        lb.style.display = 'flex';
+    }
+    
+    function closeLightbox(e) {
+        if(e.target.id === 'lightbox' || e.target.id === 'lightbox-close') {
+            document.getElementById('lightbox').style.display = 'none';
         }
     }
 
@@ -1312,8 +1555,11 @@
             link.href = canvas.toDataURL(`image/${format === 'jpg' ? 'jpeg' : 'png'}`, 0.95);
             link.click();
             
-            // Auto-save to History Gallery
-            await saveToHistory(captureArea);
+            // Auto-save logic
+            if (document.getElementById('auto-save-toggle').checked) {
+                saveAllSettings(true); // silent save
+            }
+            await saveToHistory(captureArea); // Also saves to visual history
             
         } catch (error) {
             alert('Error generating image. Try reducing image size.');
