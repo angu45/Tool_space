@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <!-- =========================
+       BASIC META
+  ========================== -->
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Ebook Download Link Generator | ManyBooks</title>
+
+  <meta
+    name="description"
+    content="Generate clean ebook download links from your Blogger post, ebook cover and Google Drive PDF URL."
+  >
+
+  <meta
+    name="keywords"
+    content="ebook download link generator, Blogger ebook generator, PDF download link, ebook token generator, ManyBooks"
+  >
+
+  <meta name="robots" content="index, follow">
+
+  <meta name="author" content="ManyBooks">
+
+  <meta name="theme-color" content="#2563eb">
+
+  <!-- Canonical -->
+  <link
+    rel="canonical"
+    href="https://www.manybooks.in/p/ebook-token-generator.html"
+  >
+
+  <!-- =========================
+       OPEN GRAPH
+  ========================== -->
+
+  <meta
+    property="og:type"
+    content="website"
+  >
+
+  <meta
+    property="og:title"
+    content="Ebook Download Link Generator"
+  >
+
+  <meta
+    property="og:description"
+    content="Create ebook download links using your Blogger post, cover image and Google Drive PDF."
+  >
+
+  <meta
+    property="og:url"
+    content="https://www.manybooks.in/p/ebook-token-generator.html"
+  >
+
+  <meta
+    property="og:site_name"
+    content="ManyBooks"
+  >
+
+  <!-- =========================
+       TWITTER CARD
+  ========================== -->
+
+  <meta
+    name="twitter:card"
+    content="summary_large_image"
+  >
+
+  <meta
+    name="twitter:title"
+    content="Ebook Download Link Generator"
+  >
+
+  <meta
+    name="twitter:description"
+    content="Generate ebook download links quickly and easily."
+  >
+
+  <!-- =========================
+       FAVICON
+  ========================== -->
+
+  <link
+    rel="icon"
+    href="https://www.manybooks.in/favicon.ico"
+  >
+
+  <!-- =========================
+       STRUCTURED DATA
+  ========================== -->
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Ebook Download Link Generator",
+    "url": "https://www.manybooks.in/p/ebook-token-generator.html",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Web",
+    "description": "Generate ebook download links from Blogger posts and Google Drive PDF files.",
+    "author": {
+      "@type": "Organization",
+      "name": "ManyBooks"
+    }
+  }
+  </script>
+
+
+  <!-- =========================
+       CSS
+  ========================== -->
+
+  <style>
+
+    *{
+      box-sizing:border-box;
+    }
+
+    html{
+      scroll-behavior:smooth;
+    }
+
+    body{
+      margin:0;
+      padding:0;
+      background:#f5f9ff;
+      color:#172033;
+      font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Arial,
+        sans-serif;
+    }
+
+    .ebook-generator-wrapper{
+      width:100%;
+      padding:45px 18px 60px;
+    }
+
+    .ebook-generator-container{
+      width:100%;
+      max-width:780px;
+      margin:0 auto;
+    }
+
+    /* HEADER */
+
+    .generator-header{
+      text-align:center;
+      margin-bottom:25px;
+    }
+
+    .generator-logo{
+      width:64px;
+      height:64px;
+      margin:0 auto 15px;
+      border-radius:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:30px;
+      background:#e8f1ff;
+      border:1px solid #cfe0ff;
+    }
+
+    .generator-header h1{
+      margin:0;
+      font-size:34px;
+      line-height:1.2;
+      font-weight:850;
+      letter-spacing:-.7px;
+    }
+
+    .generator-header p{
+      max-width:620px;
+      margin:12px auto 0;
+      color:#64748b;
+      font-size:16px;
+      line-height:1.6;
+    }
+
+    /* CARD */
+
+    .generator-card{
+      background:#ffffff;
+      border:1px solid #dbe5f0;
+      border-radius:22px;
+      padding:30px;
+      box-shadow:
+        0 15px 45px rgba(30,70,110,.09);
+    }
+
+    /* FORM */
+
+    .form-group{
+      margin-bottom:20px;
+    }
+
+    .form-label{
+      display:block;
+      margin-bottom:8px;
+      font-size:14px;
+      font-weight:800;
+      color:#263449;
+    }
+
+    .form-label span{
+      color:#2563eb;
+    }
+
+    .form-input{
+      width:100%;
+      padding:15px 16px;
+      border:1px solid #cbd5e1;
+      border-radius:12px;
+      background:#ffffff;
+      color:#172033;
+      font-size:15px;
+      outline:none;
+      transition:
+        border-color .2s,
+        box-shadow .2s;
+    }
+
+    .form-input::placeholder{
+      color:#94a3b8;
+    }
+
+    .form-input:focus{
+      border-color:#2563eb;
+      box-shadow:
+        0 0 0 4px rgba(37,99,235,.10);
+    }
+
+    /* BUTTON */
+
+    .generate-button{
+      width:100%;
+      border:0;
+      border-radius:13px;
+      padding:16px 20px;
+      background:#2563eb;
+      color:#ffffff;
+      font-size:16px;
+      font-weight:850;
+      cursor:pointer;
+      transition:
+        transform .2s,
+        background .2s,
+        box-shadow .2s;
+    }
+
+    .generate-button:hover{
+      background:#1d4ed8;
+      transform:translateY(-1px);
+      box-shadow:
+        0 10px 25px rgba(37,99,235,.20);
+    }
+
+    .generate-button:active{
+      transform:translateY(0);
+    }
+
+    /* ERROR */
+
+    .error-box{
+      display:none;
+      margin-top:18px;
+      padding:14px 16px;
+      border-radius:12px;
+      background:#fff1f2;
+      border:1px solid #fecdd3;
+      color:#9f1239;
+      font-size:14px;
+      font-weight:700;
+    }
+
+    /* RESULT */
+
+    .result-box{
+      display:none;
+      margin-top:25px;
+      padding:20px;
+      border-radius:16px;
+      background:#f0f7ff;
+      border:1px solid #bfdbfe;
+    }
+
+    .result-heading{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:12px;
+      font-size:18px;
+      font-weight:850;
+      color:#14532d;
+    }
+
+    .generated-url{
+      width:100%;
+      padding:14px;
+      border-radius:10px;
+      background:#ffffff;
+      border:1px solid #dbeafe;
+      color:#334155;
+      font-size:13px;
+      line-height:1.6;
+      word-break:break-all;
+      user-select:all;
+    }
+
+    .copy-button{
+      width:100%;
+      margin-top:12px;
+      padding:13px;
+      border:0;
+      border-radius:10px;
+      background:#0f172a;
+      color:#ffffff;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    .copy-button:hover{
+      background:#1e293b;
+    }
+
+    /* INFO */
+
+    .generator-info{
+      margin-top:22px;
+      padding:17px;
+      border-radius:13px;
+      background:#f8fafc;
+      border:1px solid #e2e8f0;
+      color:#64748b;
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .generator-info strong{
+      color:#334155;
+    }
+
+    /* FOOTER */
+
+    .generator-footer{
+      text-align:center;
+      margin-top:25px;
+      color:#94a3b8;
+      font-size:13px;
+    }
+
+    /* MOBILE */
+
+    @media(max-width:600px){
+
+      .ebook-generator-wrapper{
+        padding:25px 12px 45px;
+      }
+
+      .generator-card{
+        padding:21px 17px;
+        border-radius:18px;
+      }
+
+      .generator-header h1{
+        font-size:27px;
+      }
+
+      .generator-header p{
+        font-size:14px;
+      }
+
+      .generator-logo{
+        width:55px;
+        height:55px;
+        font-size:26px;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+  <!-- =========================
+       MAIN
+  ========================== -->
+
+  <main class="ebook-generator-wrapper">
+
+    <div class="ebook-generator-container">
+
+
+      <!-- HEADER -->
+
+      <header class="generator-header">
+
+        <div
+          class="generator-logo"
+          aria-hidden="true"
+        >
+          📚
+        </div>
+
+        <h1>
+          Ebook Download Link Generator
+        </h1>
+
+        <p>
+          Create a clean download link for your ebook
+          using your Blogger post, cover image and
+          Google Drive PDF.
+        </p>
+
+      </header>
+
+
+      <!-- GENERATOR CARD -->
+
+      <section class="generator-card">
+
+        <!-- BLOGGER URL -->
+
+        <div class="form-group">
+
+          <label
+            class="form-label"
+            for="etgPostUrl"
+          >
+            Blogger Post URL <span>*</span>
+          </label>
+
+          <input
+            id="etgPostUrl"
+            class="form-input"
+            type="url"
+            placeholder="https://www.manybooks.in/2026/08/example.html"
+            autocomplete="url"
+          >
+
+        </div>
+
+
+        <!-- TITLE -->
+
+        <div class="form-group">
+
+          <label
+            class="form-label"
+            for="etgTitle"
+          >
+            Ebook Title <span>*</span>
+          </label>
+
+          <input
+            id="etgTitle"
+            class="form-input"
+            type="text"
+            placeholder="Enter your ebook title"
+            autocomplete="off"
+          >
+
+        </div>
+
+
+        <!-- COVER -->
+
+        <div class="form-group">
+
+          <label
+            class="form-label"
+            for="etgImage"
+          >
+            Ebook Cover / Thumbnail URL <span>*</span>
+          </label>
+
+          <input
+            id="etgImage"
+            class="form-input"
+            type="url"
+            placeholder="https://blogger.googleusercontent.com/..."
+            autocomplete="url"
+          >
+
+        </div>
+
+
+        <!-- DRIVE -->
+
+        <div class="form-group">
+
+          <label
+            class="form-label"
+            for="etgDrive"
+          >
+            Google Drive PDF URL <span>*</span>
+          </label>
+
+          <input
+            id="etgDrive"
+            class="form-input"
+            type="url"
+            placeholder="https://drive.google.com/file/d/FILE_ID/view"
+            autocomplete="url"
+          >
+
+        </div>
+
+
+        <!-- GENERATE -->
+
+        <button
+          type="button"
+          class="generate-button"
+          id="generateButton"
+        >
+          🔐 Generate Download Link
+        </button>
+
+
+        <!-- ERROR -->
+
+        <div
+          id="etgError"
+          class="error-box"
+          role="alert"
+        ></div>
+
+
+        <!-- RESULT -->
+
+        <div
+          id="etgResult"
+          class="result-box"
+        >
+
+          <div class="result-heading">
+            ✅ Download Link Generated
+          </div>
+
+          <div
+            id="etgGeneratedUrl"
+            class="generated-url"
+          ></div>
+
+          <button
+            type="button"
+            id="copyButton"
+            class="copy-button"
+          >
+            📋 Copy Download URL
+          </button>
+
+        </div>
+
+
+        <!-- INFORMATION -->
+
+        <div class="generator-info">
+
+          <strong>How it works:</strong><br>
+
+          Enter your Blogger post URL, ebook title,
+          cover image URL and Google Drive PDF URL.
+          The tool creates a tokenized URL for your
+          download page.
+
+          <br><br>
+
+          <strong>Download Page:</strong><br>
+
+          https://www.manybooks.in/p/download-your-ebooks.html
+
+          <br><br>
+
+          <strong>Note:</strong>
+          This is a client-side token system.
+          It does not provide true server-side
+          protection for the PDF URL.
+
+        </div>
+
+      </section>
+
+
+      <!-- FOOTER -->
+
+      <footer class="generator-footer">
+
+        © 2026 ManyBooks · Ebook Download Tools
+
+      </footer>
+
+
+    </div>
+
+  </main>
+
+
+  <!-- =========================
+       JAVASCRIPT
+  ========================== -->
+
+  <script>
+  (function(){
+
+    "use strict";
+
+
+    /* =========================
+       SETTINGS
+    ========================== */
+
+    const DOWNLOAD_PAGE =
+      "https://www.manybooks.in/p/download-your-ebooks.html";
+
+
+    /* =========================
+       ELEMENTS
+    ========================== */
+
+    const postInput =
+      document.getElementById("etgPostUrl");
+
+    const titleInput =
+      document.getElementById("etgTitle");
+
+    const imageInput =
+      document.getElementById("etgImage");
+
+    const driveInput =
+      document.getElementById("etgDrive");
+
+    const generateButton =
+      document.getElementById("generateButton");
+
+    const errorBox =
+      document.getElementById("etgError");
+
+    const resultBox =
+      document.getElementById("etgResult");
+
+    const generatedUrl =
+      document.getElementById("etgGeneratedUrl");
+
+    const copyButton =
+      document.getElementById("copyButton");
+
+
+    /* =========================
+       UTF-8 BASE64 ENCODER
+    ========================== */
+
+    function encodeToken(data){
+
+      const json =
+        JSON.stringify(data);
+
+      const bytes =
+        new TextEncoder().encode(json);
+
+      let binary = "";
+
+      for(
+        let i = 0;
+        i < bytes.length;
+        i++
+      ){
+
+        binary +=
+          String.fromCharCode(bytes[i]);
+
+      }
+
+      return btoa(binary)
+
+        .replace(/\+/g,"-")
+
+        .replace(/\//g,"_")
+
+        .replace(/=+$/,"");
+
+    }
+
+
+    /* =========================
+       ERROR
+    ========================== */
+
+    function showError(message){
+
+      errorBox.textContent =
+        "⚠️ " + message;
+
+      errorBox.style.display =
+        "block";
+
+      resultBox.style.display =
+        "none";
+
+    }
+
+
+    /* =========================
+       HIDE ERROR
+    ========================== */
+
+    function clearError(){
+
+      errorBox.style.display =
+        "none";
+
+    }
+
+
+    /* =========================
+       URL VALIDATION
+    ========================== */
+
+    function validURL(value){
+
+      try{
+
+        const url =
+          new URL(value);
+
+        return (
+          url.protocol === "http:" ||
+          url.protocol === "https:"
+        );
+
+      }catch(error){
+
+        return false;
+
+      }
+
+    }
+
+
+    /* =========================
+       GENERATE
+    ========================== */
+
+    function generateLink(){
+
+      clearError();
+
+      const post =
+        postInput.value.trim();
+
+      const title =
+        titleInput.value.trim();
+
+      const image =
+        imageInput.value.trim();
+
+      const drive =
+        driveInput.value.trim();
+
+
+      /* REQUIRED */
+
+      if(!post){
+
+        showError(
+          "Blogger Post URL enter करा."
+        );
+
+        postInput.focus();
+
+        return;
+      }
+
+
+      if(!title){
+
+        showError(
+          "Ebook Title enter करा."
+        );
+
+        titleInput.focus();
+
+        return;
+      }
+
+
+      if(!image){
+
+        showError(
+          "Ebook Cover / Thumbnail URL enter करा."
+        );
+
+        imageInput.focus();
+
+        return;
+      }
+
+
+      if(!drive){
+
+        showError(
+          "Google Drive PDF URL enter करा."
+        );
+
+        driveInput.focus();
+
+        return;
+      }
+
+
+      /* VALIDATE URLS */
+
+      if(!validURL(post)){
+
+        showError(
+          "Blogger Post URL valid नाही."
+        );
+
+        postInput.focus();
+
+        return;
+      }
+
+
+      if(!validURL(image)){
+
+        showError(
+          "Cover Image URL valid नाही."
+        );
+
+        imageInput.focus();
+
+        return;
+      }
+
+
+      if(!validURL(drive)){
+
+        showError(
+          "Google Drive URL valid नाही."
+        );
+
+        driveInput.focus();
+
+        return;
+      }
+
+
+      /* TOKEN DATA */
+
+      const tokenData = {
+
+        v: 1,
+
+        title: title,
+
+        image: image,
+
+        pdf: drive,
+
+        post: post,
+
+        created: Date.now(),
+
+        id:
+          "EB-" +
+          Date.now().toString(36) +
+          "-" +
+          Math.random()
+            .toString(36)
+            .substring(2,9)
+
+      };
+
+
+      /* CREATE TOKEN */
+
+      const token =
+        encodeToken(tokenData);
+
+
+      /* FINAL URL */
+
+      const finalURL =
+        DOWNLOAD_PAGE +
+        "?token=" +
+        encodeURIComponent(token);
+
+
+      /* DISPLAY */
+
+      generatedUrl.textContent =
+        finalURL;
+
+      resultBox.style.display =
+        "block";
+
+
+      /* SAVE TEMPORARILY */
+
+      window.generatedEbookURL =
+        finalURL;
+
+
+      /* SCROLL */
+
+      setTimeout(function(){
+
+        resultBox.scrollIntoView({
+          behavior:"smooth",
+          block:"nearest"
+        });
+
+      },100);
+
+    }
+
+
+    /* =========================
+       COPY
+    ========================== */
+
+    async function copyURL(){
+
+      const url =
+        window.generatedEbookURL;
+
+      if(!url){
+
+        return;
+
+      }
+
+
+      try{
+
+        await navigator.clipboard.writeText(
+          url
+        );
+
+        copyButton.textContent =
+          "✅ URL Copied!";
+
+
+      }catch(error){
+
+        /* Fallback */
+
+        const textarea =
+          document.createElement("textarea");
+
+        textarea.value =
+          url;
+
+        document.body.appendChild(
+          textarea
+        );
+
+        textarea.select();
+
+        document.execCommand(
+          "copy"
+        );
+
+        textarea.remove();
+
+        copyButton.textContent =
+          "✅ URL Copied!";
+
+      }
+
+
+      setTimeout(function(){
+
+        copyButton.textContent =
+          "📋 Copy Download URL";
+
+      },1800);
+
+    }
+
+
+    /* =========================
+       EVENTS
+    ========================== */
+
+    generateButton.addEventListener(
+      "click",
+      generateLink
+    );
+
+
+    copyButton.addEventListener(
+      "click",
+      copyURL
+    );
+
+
+    /* ENTER KEY */
+
+    [
+      postInput,
+      titleInput,
+      imageInput,
+      driveInput
+    ].forEach(function(input){
+
+      input.addEventListener(
+        "keydown",
+        function(event){
+
+          if(event.key === "Enter"){
+
+            generateLink();
+
+          }
+
+        }
+      );
+
+    });
+
+
+  })();
+  </script>
+
+</body>
+</html>
