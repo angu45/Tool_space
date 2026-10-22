@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EPUB Studio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f4f1ea;--sf:#fff;--tx:#1f1d1a;--mu:#7a756b;--bd:#ddd7c9;--ac:#2f6f5e;--ac2:#e3efe9;--pg:#fffdf8}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#1b1a18;--sf:#26241f;--tx:#ece8de;--mu:#9a9486;--bd:#3a372f;--ac:#6fc2a8;--ac2:#27382f;--pg:#2b2924}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#1b1a18;--sf:#26241f;--tx:#ece8de;--mu:#9a9486;--bd:#3a372f;--ac:#6fc2a8;--ac2:#27382f;--pg:#2b2924}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;flex-direction:column}
+header{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px;background:var(--sf);border-bottom:1px solid var(--bd)}
+header h1{font-size:16px;margin:0 6px 0 2px;color:var(--ac)}
+button,select,input{font:inherit;color:var(--tx)}
+button{background:var(--sf);border:1px solid var(--bd);border-radius:7px;padding:6px 9px;cursor:pointer;min-height:34px}
+button:hover{background:var(--ac2)}
+button.p{background:var(--ac);color:var(--bg);border-color:var(--ac)}
+button.on{background:var(--ac2);border-color:var(--ac)}
+input,select{background:var(--sf);border:1px solid var(--bd);border-radius:7px;padding:6px 8px;min-height:34px}
+.meta{display:flex;gap:6px;flex:1;min-width:200px}
+.meta input{flex:1;min-width:0}
+#tb{display:flex;flex-wrap:wrap;gap:4px;padding:6px 8px;background:var(--sf);border-bottom:1px solid var(--bd)}
+#tb button{min-width:34px;padding:4px 7px}
+#tb input[type=color]{padding:1px;width:34px;height:34px}
+#panel{display:none;gap:6px;flex-wrap:wrap;padding:6px 8px;background:var(--ac2);border-bottom:1px solid var(--bd)}
+#panel input{flex:1;min-width:110px}
+main{flex:1;display:flex;min-height:0;position:relative}
+aside{width:250px;background:var(--sf);border-right:1px solid var(--bd);display:flex;flex-direction:column;min-height:0}
+aside .h{display:flex;gap:4px;padding:6px;border-bottom:1px solid var(--bd)}
+#list{flex:1;overflow:auto;margin:0;padding:4px;list-style:none}
+#list li{display:flex;align-items:center;gap:4px;padding:7px;border-radius:7px;cursor:pointer}
+#list li.cur{background:var(--ac2);outline:1px solid var(--ac)}
+#list li span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#list li button{padding:0 5px;min-height:26px;font-size:12px}
+#stage{flex:1;overflow:auto;padding:14px;min-width:0}
+#ed{max-width:760px;min-height:100%;margin:0 auto;background:var(--pg);border:1px solid var(--bd);border-radius:6px;padding:28px 26px;font:17px/1.7 Georgia,"Times New Roman",serif;outline:none;overflow-wrap:anywhere}
+#ed img{max-width:100%;height:auto}
+#ed table{border-collapse:collapse;max-width:100%}
+#ed td,#ed th{border:1px solid var(--bd);padding:5px 8px}
+#ed blockquote{border-left:3px solid var(--ac);margin-left:0;padding-left:14px;color:var(--mu)}
+#src{display:none;width:100%;max-width:760px;margin:0 auto;min-height:100%;font:13px/1.5 ui-monospace,Menlo,monospace;background:var(--sf);color:var(--tx);border:1px solid var(--bd);border-radius:6px;padding:12px}
+footer{display:flex;justify-content:space-between;gap:8px;padding:5px 10px;font-size:12px;color:var(--mu);background:var(--sf);border-top:1px solid var(--bd)}
+#tg{display:none}
+#drop{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:var(--ac2);color:var(--ac);font-size:20px;border:3px dashed var(--ac);z-index:5}
+@media (max-width:700px){
+ #tg{display:inline-block}
+ aside{position:absolute;z-index:4;top:0;bottom:0;left:0;width:82%;max-width:300px;transform:translateX(-102%);transition:transform .2s;box-shadow:2px 0 12px #0004}
+ aside.open{transform:none}
+ #ed{padding:18px 14px;font-size:16px}
+}
+.rd #tb{display:none}
+</style>
+</head>
+<body>
+<header>
+ <h1>📖 EPUB Studio</h1>
+ <button id="tg" title="Chapters">☰</button>
+ <button id="bNew">New</button>
+ <button id="bImp" class="p">Import</button>
+ <button id="bExp" class="p">Export ▾</button>
+ <select id="exfmt"><option value="epub">EPUB</option><option value="html">HTML</option><option value="txt">TXT</option><option value="md">Markdown</option></select>
+ <button id="bMode">👁 Read</button>
+ <button id="bSrc">&lt;/&gt; HTML</button>
+ <button id="bTheme">🌓</button>
+ <div class="meta"><input id="mt" placeholder="Book title"><input id="ma" placeholder="Author"><input id="ml" placeholder="lang" value="en" style="max-width:60px"></div>
+ <input type="file" id="fi" hidden accept=".epub,.txt,.html,.htm,.xhtml,.md,.markdown,.docx">
+ <input type="file" id="fimg" hidden accept="image/*">
+</header>
+<div id="tb"></div>
+<div id="panel"></div>
+<main>
+ <aside id="side">
+  <div class="h"><button id="bAdd" class="p" style="flex:1">+ Chapter</button></div>
+  <ul id="list"></ul>
+ </aside>
+ <div id="stage">
+  <div id="ed" contenteditable="true" spellcheck="true"></div>
+  <textarea id="src" spellcheck="false"></textarea>
+ </div>
+ <div id="drop">Drop a file to import</div>
+</main>
+<footer><span id="st">Ready</span><span id="wc"></span></footer>
+<script>
+const $=s=>document.querySelector(s);
+const ed=$('#ed'),src=$('#src'),listEl=$('#list');
+let ch=[],cur=0,srcMode=false,nid=1;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const say=t=>{$('#st').textContent=t};
+const mk=(t,h)=>({id:nid++,title:t,html:h||'<p><br></p>'});
+
+/* ---------- toolbar ---------- */
+const tools=[
+ ['B','bold','Bold'],['I','italic','Italic'],['U','underline','Underline'],['S','strikeThrough','Strike'],
+ ['x₂','subscript','Subscript'],['x²','superscript','Superscript'],'|',
+ ['≡L','justifyLeft','Left'],['≡C','justifyCenter','Center'],['≡R','justifyRight','Right'],['☰J','justifyFull','Justify'],'|',
+ ['• List','insertUnorderedList','Bullets'],['1. List','insertOrderedList','Numbers'],['⇥','indent','Indent'],['⇤','outdent','Outdent'],'|',
+ ['❝','blockquote','Quote'],['—','insertHorizontalRule','Line'],['▦','table','Table'],['🔗','link','Link'],['🖼','image','Image'],['⌫fmt','removeFormat','Clear format'],'|',
+ ['↶','undo','Undo'],['↷','redo','Redo'],['🔍','find','Find / replace']
+];
+const tb=$('#tb');
+tb.innerHTML=`<select id="blk" title="Style"><option value="p">Paragraph</option><option value="h1">Heading 1</option><option value="h2">Heading 2</option><option value="h3">Heading 3</option><option value="pre">Code</option></select>
+<select id="fnt" title="Font"><option value="">Font</option><option>Georgia</option><option>Arial</option><option>Times New Roman</option><option>Courier New</option><option>Verdana</option><option>Trebuchet MS</option></select>
+<select id="fsz" title="Size"><option value="">Size</option><option value="1">XS</option><option value="2">S</option><option value="3">M</option><option value="4">L</option><option value="5">XL</option><option value="6">XXL</option></select>
+<input type="color" id="fc" value="#000000" title="Text colour"><input type="color" id="hc" value="#ffff00" title="Highlight">`+
+tools.map(t=>t==='|'?'<span style="width:6px"></span>':`<button data-c="${t[1]}" title="${t[2]}">${t[0]}</button>`).join('');
+tb.addEventListener('mousedown',e=>{if(e.target.tagName==='BUTTON')e.preventDefault()});
+const run=(c,v)=>{ed.focus();document.execCommand(c,false,v);sync()};
+tb.addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b)return;const c=b.dataset.c;
+ if(c==='blockquote')run('formatBlock','blockquote');
+ else if(c==='table'){let h='<table>';for(let r=0;r<3;r++){h+='<tr>';for(let k=0;k<3;k++)h+='<td>&nbsp;</td>';h+='</tr>'}run('insertHTML',h+'</table><p><br></p>')}
+ else if(c==='link')panel('link');
+ else if(c==='image')$('#fimg').click();
+ else if(c==='find')panel('find');
+ else run(c);
+});
+$('#blk').onchange=e=>run('formatBlock',e.target.value);
+$('#fnt').onchange=e=>e.target.value&&run('fontName',e.target.value);
+$('#fsz').onchange=e=>e.target.value&&run('fontSize',e.target.value);
+$('#fc').oninput=e=>run('foreColor',e.target.value);
+$('#hc').oninput=e=>run('hiliteColor',e.target.value);
+$('#fimg').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>run('insertImage',r.result);r.readAsDataURL(f);e.target.value=''};
+
+/* link / find panel */
+let saved=null;
+document.addEventListener('selectionchange',()=>{const s=getSelection();if(s.rangeCount&&ed.contains(s.anchorNode))saved=s.getRangeAt(0).cloneRange()});
+function panel(kind){
+ const p=$('#panel');
+ if(p.dataset.k===kind&&p.style.display==='flex'){p.style.display='none';return}
+ p.dataset.k=kind;p.style.display='flex';
+ if(kind==='link'){p.innerHTML='<input id="pu" placeholder="https://..."><button class="p" id="pok">Apply link</button><button id="pcl">Close</button>';
+  $('#pok').onclick=()=>{ed.focus();if(saved){const s=getSelection();s.removeAllRanges();s.addRange(saved)}run('createLink',$('#pu').value);p.style.display='none'}}
+ else{p.innerHTML='<input id="pf" placeholder="Find"><input id="pr" placeholder="Replace with"><button id="p1">Replace in chapter</button><button id="p2" class="p">Replace in all</button><button id="pcl">Close</button>';
+  $('#p1').onclick=()=>doRep(false);$('#p2').onclick=()=>doRep(true)}
+ $('#pcl').onclick=()=>p.style.display='none';
+}
+function repHtml(h,f,r){const d=document.createElement('div');d.innerHTML=h;let n=0;
+ const w=document.createTreeWalker(d,NodeFilter.SHOW_TEXT);const ns=[];while(w.nextNode())ns.push(w.currentNode);
+ ns.forEach(t=>{const parts=t.nodeValue.split(f);if(parts.length>1){n+=parts.length-1;t.nodeValue=parts.join(r)}});return[d.innerHTML,n]}
+function doRep(all){const f=$('#pf').value,r=$('#pr').value;if(!f)return;save();let tot=0;
+ (all?ch:[ch[cur]]).forEach(c=>{const[h,n]=repHtml(c.html,f,r);c.html=h;tot+=n});
+ show(cur);say(tot+' replaced')}
+
+/* ---------- chapters ---------- */
+function save(){ch[cur].html=srcMode?src.value:ed.innerHTML}
+function sync(){counts()}
+function counts(){const t=ed.innerText.trim();$('#wc').textContent=(t?t.split(/\s+/).length:0)+' words · '+t.length+' chars'}
+function renderList(){
+ listEl.innerHTML='';
+ ch.forEach((c,i)=>{const li=document.createElement('li');if(i===cur)li.className='cur';
+  li.innerHTML=`<span>${i+1}. ${esc(c.title)}</span><button data-a="u">↑</button><button data-a="d">↓</button><button data-a="r">✎</button><button data-a="x">🗑</button>`;
+  li.onclick=e=>{const a=e.target.dataset.a;
+   if(!a){save();show(i);$('#side').classList.remove('open');return}
+   save();e.stopPropagation();
+   if(a==='x'){if(ch.length<2){say('Keep at least one chapter');return}ch.splice(i,1);cur=Math.min(cur,ch.length-1)}
+   if(a==='u'&&i>0){[ch[i-1],ch[i]]=[ch[i],ch[i-1]];cur=i-1}
+   if(a==='d'&&i<ch.length-1){[ch[i+1],ch[i]]=[ch[i],ch[i+1]];cur=i+1}
+   if(a==='r'){li.querySelector('span').outerHTML='<input value="'+esc(c.title)+'" style="flex:1;min-width:0">';const inp=li.querySelector('input');inp.focus();inp.select();inp.onclick=ev=>ev.stopPropagation();
+    const done=()=>{c.title=inp.value||c.title;renderList()};inp.onblur=done;inp.onkeydown=ev=>{if(ev.key==='Enter')inp.blur()};return}
+   show(cur)};
+  listEl.appendChild(li)})}
+function show(i){cur=i;ed.innerHTML=ch[i].html;src.value=ch[i].html;renderList();counts()}
+$('#bAdd').onclick=()=>{save();ch.splice(cur+1,0,mk('New chapter','<h1>New chapter</h1><p><br></p>'));show(cur+1)};
+ed.addEventListener('input',()=>{counts();const h=ed.querySelector('h1,h2');if(h&&h.textContent.trim()&&ch[cur]&&ch[cur].auto)ch[cur].title=h.textContent.trim().slice(0,60)});
+$('#tg').onclick=()=>$('#side').classList.toggle('open');
+$('#bNew').onclick=()=>{ch=[mk('Chapter 1','<h1>Chapter 1</h1><p>Start writing…</p>')];$('#mt').value='';$('#ma').value='';show(0);say('New book')};
+$('#bMode').onclick=function(){const r=document.body.classList.toggle('rd');ed.contentEditable=!r;this.textContent=r?'✏️ Edit':'👁 Read'};
+$('#bSrc').onclick=function(){save();srcMode=!srcMode;this.classList.toggle('on',srcMode);
+ ed.style.display=srcMode?'none':'block';src.style.display=srcMode?'block':'none';
+ if(!srcMode){ed.innerHTML=ch[cur].html}else src.value=ch[cur].html};
+src.oninput=()=>{ch[cur].html=src.value};
+$('#bTheme').onclick=()=>{const r=document.documentElement;const dark=getComputedStyle(r).getPropertyValue('--bg').trim()==='#1b1a18';r.dataset.theme=dark?'light':'dark'};
+
+/* ---------- import ---------- */
+$('#bImp').onclick=()=>$('#fi').click();
+$('#fi').onchange=e=>{const f=e.target.files[0];if(f)load(f);e.target.value=''};
+['dragover','drop'].forEach(n=>document.addEventListener(n,e=>{e.preventDefault();$('#drop').style.display=n==='dragover'?'flex':'none';if(n==='drop'&&e.dataTransfer.files[0])load(e.dataTransfer.files[0])}));
+document.addEventListener('dragleave',e=>{if(!e.relatedTarget)$('#drop').style.display='none'});
+const clean=h=>{const d=document.createElement('div');d.innerHTML=h;d.querySelectorAll('script,iframe,object,embed,link,style,meta,title').forEach(n=>n.remove());
+ d.querySelectorAll('*').forEach(n=>[...n.attributes].forEach(a=>{if(/^on/i.test(a.name)||/^\s*javascript:/i.test(a.value))n.removeAttribute(a.name)}));return d.innerHTML};
+function split(h,fallback){const d=document.createElement('div');d.innerHTML=h;const hs=d.querySelectorAll('h1');
+ if(hs.length<2)return[mk(fallback,h)];const out=[];let t=fallback,buf='';
+ [...d.childNodes].forEach(n=>{if(n.nodeName==='H1'){if(buf.trim())out.push(mk(t,buf));t=n.textContent.trim()||fallback;buf=''}buf+=n.outerHTML||esc(n.textContent)});
+ if(buf.trim())out.push(mk(t,buf));return out}
+function md2h(t){const L=t.replace(/\r/g,'').split('\n');let o='',inl=false,pa=[];
+ const il=s=>esc(s).replace(/!\[([^\]]*)\]\(([^)]+)\)/g,'<img alt="$1" src="$2">').replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2">$1</a>').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/\*(.+?)\*/g,'<i>$1</i>').replace(/`(.+?)`/g,'<code>$1</code>');
+ const fl=()=>{if(pa.length){o+='<p>'+pa.map(il).join(' ')+'</p>';pa=[]}};
+ L.forEach(l=>{let m;if(m=l.match(/^(#{1,6})\s+(.*)/)){fl();if(inl){o+='</ul>';inl=false}o+=`<h${m[1].length}>${il(m[2])}</h${m[1].length}>`}
+  else if(m=l.match(/^\s*[-*]\s+(.*)/)){fl();if(!inl){o+='<ul>';inl=true}o+='<li>'+il(m[1])+'</li>'}
+  else if(/^>\s?/.test(l)){fl();o+='<blockquote>'+il(l.replace(/^>\s?/,''))+'</blockquote>'}
+  else if(!l.trim()){fl();if(inl){o+='</ul>';inl=false}}else pa.push(l)});
+ fl();if(inl)o+='</ul>';return o}
+const mimes={png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',gif:'image/gif',svg:'image/svg+xml',webp:'image/webp'};
+const norm=p=>{const o=[];p.split('/').forEach(s=>{if(s==='..')o.pop();else if(s&&s!=='.')o.push(s)});return o.join('/')};
+async function load(f){
+ say('Loading '+f.name+'…');const ext=(f.name.split('.').pop()||'').toLowerCase();const base=f.name.replace(/\.[^.]+$/,'');
+ try{
+  let list;
+  if(ext==='epub')list=await readEpub(f);
+  else if(ext==='docx'){const r=await mammoth.convertToHtml({arrayBuffer:await f.arrayBuffer()});list=split(clean(r.value),base)}
+  else{const t=await f.text();
+   if(ext==='txt')list=[mk(base,'<h1>'+esc(base)+'</h1>'+t.split(/\n\s*\n/).map(p=>'<p>'+esc(p.trim()).replace(/\n/g,'<br>')+'</p>').join(''))];
+   else if(ext==='md'||ext==='markdown')list=split(clean(md2h(t)),base);
+   else{const d=new DOMParser().parseFromString(t,'text/html');list=split(clean(d.body.innerHTML),(d.title||base))}}
+  if(ext!=='epub'){$('#mt').value=base}
+  list.forEach(c=>c.auto=false);ch=list.length?list:[mk(base)];show(0);say('Loaded '+ch.length+' chapter(s) from '+f.name);
+ }catch(err){say('Import failed: '+err.message)}}
+async function readEpub(f){
+ const zip=await JSZip.loadAsync(f),P=s=>new DOMParser().parseFromString(s,'application/xml');
+ const cont=P(await zip.file('META-INF/container.xml').async('string'));
+ const opfPath=cont.querySelector('rootfile').getAttribute('full-path');
+ const opf=P(await zip.file(opfPath).async('string'));const bd=opfPath.includes('/')?opfPath.replace(/[^/]*$/,''):'';
+ const g=n=>{const e=opf.getElementsByTagName(n)[0];return e?e.textContent.trim():''};
+ $('#mt').value=g('dc:title');$('#ma').value=g('dc:creator');$('#ml').value=g('dc:language')||'en';
+ const man={};opf.querySelectorAll('manifest > item').forEach(i=>man[i.getAttribute('id')]=i);
+ const out=[];
+ for(const ir of opf.querySelectorAll('spine > itemref')){
+  const it=man[ir.getAttribute('idref')];if(!it)continue;
+  const path=norm(bd+decodeURI(it.getAttribute('href')));const zf=zip.file(path);if(!zf)continue;
+  const d=new DOMParser().parseFromString(await zf.async('string'),'text/html');
+  const dir=path.includes('/')?path.replace(/[^/]*$/,''):'';
+  for(const im of d.body.querySelectorAll('img,image')){
+   const at=im.hasAttribute('src')?'src':'xlink:href';const s=im.getAttribute(at)||im.getAttribute('href');
+   if(!s||s.startsWith('data:'))continue;const ip=zip.file(norm(dir+decodeURI(s.split('#')[0])));
+   if(ip){const e=ip.name.split('.').pop().toLowerCase();im.setAttribute(im.tagName==='IMG'?'src':'href','data:'+(mimes[e]||'image/png')+';base64,'+await ip.async('base64'))}}
+  const h=clean(d.body.innerHTML);if(!h.replace(/<[^>]*>|\s|&nbsp;/g,'')&&!/<img/.test(h))continue;
+  const hh=d.body.querySelector('h1,h2,h3');
+  out.push(mk((hh&&hh.textContent.trim())||d.title||it.getAttribute('href'),h));
+ }
+ return out}
+
+/* ---------- export ---------- */
+const X=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function saveFile(name,data){
+ try{const dl=await claude.use('downloads');
+  if(dl){await dl.save({filename:name,data});say('Saved '+name);return}}catch(e){if(e&&e.code==='declined'){say('Save cancelled');return}}
+ const a=document.createElement('a');a.href=URL.createObjectURL(data instanceof Blob?data:new Blob([data]));a.download=name;a.click();say('Download started')}
+$('#bExp').onclick=async()=>{
+ save();const fmt=$('#exfmt').value,t=$('#mt').value||'Untitled',nm=t.replace(/[^\w\- ]+/g,'').trim().replace(/\s+/g,'_')||'book';
+ try{
+  if(fmt==='epub')return saveFile(nm+'.epub',await buildEpub());
+  if(fmt==='html')return saveFile(nm+'.html',new Blob(['<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+X(t)+'</title></head><body>'+ch.map(c=>'<section>'+c.html+'</section>').join('')+'</body></html>'],{type:'text/html'}));
+  const tmp=document.createElement('div');
+  if(fmt==='txt')return saveFile(nm+'.txt',new Blob([ch.map(c=>{tmp.innerHTML=c.html.replace(/<\/(p|h\d|li|div|blockquote)>|<br\s*\/?>/gi,'$&\n');return tmp.textContent.trim()}).join('\n\n')],{type:'text/plain'}));
+  if(fmt==='md')return saveFile(nm+'.md',new Blob([ch.map(c=>h2md(c.html)).join('\n\n')],{type:'text/markdown'}))
+ }catch(e){say('Export failed: '+e.message)}};
+function h2md(h){const d=document.createElement('div');d.innerHTML=h;
+ const w=n=>{if(n.nodeType===3)return n.nodeValue;const k=[...n.childNodes].map(w).join('');
+  switch(n.nodeName){case'H1':return'# '+k+'\n\n';case'H2':return'## '+k+'\n\n';case'H3':return'### '+k+'\n\n';case'P':case'DIV':return k+'\n\n';case'BR':return'\n';
+  case'B':case'STRONG':return'**'+k+'**';case'I':case'EM':return'*'+k+'*';case'LI':return'- '+k+'\n';case'A':return'['+k+']('+n.getAttribute('href')+')';
+  case'BLOCKQUOTE':return'> '+k+'\n\n';case'IMG':return'![]('+(n.getAttribute('src').startsWith('data:')?'image':n.getAttribute('src'))+')';default:return k}};
+ return w(d).replace(/\n{3,}/g,'\n\n').trim()}
+async function buildEpub(){
+ const t=$('#mt').value||'Untitled',a=$('#ma').value||'Unknown',lang=$('#ml').value||'en',z=new JSZip();
+ z.file('mimetype','application/epub+zip',{compression:'STORE'});
+ z.file('META-INF/container.xml','<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
+ z.file('OEBPS/style.css','body{font-family:serif;line-height:1.5;margin:1em}img{max-width:100%}blockquote{margin-left:1em;font-style:italic}td,th{border:1px solid #888;padding:4px}');
+ let mani='',spine='',nav='',ncx='',imgN=0;
+ ch.forEach((c,i)=>{
+  const d=new DOMParser().parseFromString('<body>'+c.html+'</body>','text/html');
+  d.body.querySelectorAll('img').forEach(im=>{const m=(im.getAttribute('src')||'').match(/^data:image\/([\w+]+);base64,(.*)$/s);
+   if(m){const e=m[1]==='jpeg'?'jpg':m[1].replace('svg+xml','svg');const fn='images/img'+(++imgN)+'.'+e;z.file('OEBPS/'+fn,m[2],{base64:true});im.setAttribute('src',fn);
+    mani+=`<item id="img${imgN}" href="${fn}" media-type="${mimes[e]||'image/png'}"/>`}
+   if(!im.hasAttribute('alt'))im.setAttribute('alt','')});
+  const body=new XMLSerializer().serializeToString(d.body);
+  z.file(`OEBPS/ch${i+1}.xhtml`,`<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml" lang="${X(lang)}"><head><meta charset="utf-8"/><title>${X(c.title)}</title><link rel="stylesheet" href="style.css"/></head>${body}</html>`);
+  mani+=`<item id="c${i+1}" href="ch${i+1}.xhtml" media-type="application/xhtml+xml"/>`;spine+=`<itemref idref="c${i+1}"/>`;
+  nav+=`<li><a href="ch${i+1}.xhtml">${X(c.title)}</a></li>`;
+  ncx+=`<navPoint id="n${i+1}" playOrder="${i+1}"><navLabel><text>${X(c.title)}</text></navLabel><content src="ch${i+1}.xhtml"/></navPoint>`});
+ const uid='urn:uuid:'+crypto.randomUUID();
+ z.file('OEBPS/nav.xhtml',`<?xml version="1.0" encoding="utf-8"?>\n<!DOCTYPE html>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><meta charset="utf-8"/><title>Contents</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol>${nav}</ol></nav></body></html>`);
+ z.file('OEBPS/toc.ncx',`<?xml version="1.0" encoding="utf-8"?><ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1"><head><meta name="dtb:uid" content="${uid}"/></head><docTitle><text>${X(t)}</text></docTitle><navMap>${ncx}</navMap></ncx>`);
+ z.file('OEBPS/content.opf',`<?xml version="1.0" encoding="utf-8"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="uid">${uid}</dc:identifier><dc:title>${X(t)}</dc:title><dc:creator>${X(a)}</dc:creator><dc:language>${X(lang)}</dc:language><meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d+Z/,'Z')}</meta></metadata><manifest><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/><item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/><item id="css" href="style.css" media-type="text/css"/>${mani}</manifest><spine toc="ncx">${spine}</spine></package>`);
+ return z.generateAsync({type:'blob',mimeType:'application/epub+zip',compression:'DEFLATE'})}
+
+/* ---------- init ---------- */
+ch=[mk('Chapter 1','<h1>Chapter 1</h1><p>Start writing here, or tap <b>Import</b> to open an EPUB, DOCX, HTML, Markdown or TXT file.</p>')];
+document.execCommand('styleWithCSS',false,true);
+show(0);
+</script>
+</body>
+</html>
